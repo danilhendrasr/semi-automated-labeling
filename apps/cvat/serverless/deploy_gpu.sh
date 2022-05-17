@@ -4,7 +4,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 FUNCTIONS_DIR=${1:-$SCRIPT_DIR}
 
-nuctl create project cvat
+./nuctl create project cvat
 
 shopt -s globstar
 
@@ -17,4 +17,4 @@ do
         --file "$func_config" --platform local
 done
 
-nuctl get function
+./nuctl get function
