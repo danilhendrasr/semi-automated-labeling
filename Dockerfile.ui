@@ -1,0 +1,41 @@
+FROM node:lts-slim AS cvat-ui
+
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+ARG socks_proxy
+ARG PUBLIC_INSTANCE
+ARG WA_PAGE_VIEW_HIT
+
+ENV TERM=xterm \
+    http_proxy=${http_proxy}   \
+    https_proxy=${https_proxy} \
+    no_proxy=${no_proxy} \
+    socks_proxy=${socks_proxy} \
+    LANG='C.UTF-8'  \
+    LC_ALL='C.UTF-8'
+
+# Install dependencies
+COPY package*.json /tmp/
+COPY cvat-core/package*.json /tmp/cvat-core/
+COPY cvat-canvas/package*.json /tmp/cvat-canvas/
+COPY cvat-canvas3d/package*.json /tmp/cvat-canvas3d/
+COPY cvat-ui/package*.json /tmp/cvat-ui/
+COPY cvat-data/package*.json /tmp/cvat-data/
+
+# Install common dependencies
+WORKDIR /tmp/
+RUN npm ci --ignore-scripts
+
+# Build source code
+COPY cvat-data/ /tmp/cvat-data/
+COPY cvat-core/ /tmp/cvat-core/
+COPY cvat-canvas3d/ /tmp/cvat-canvas3d/
+COPY cvat-canvas/ /tmp/cvat-canvas/
+COPY cvat-ui/ /tmp/cvat-ui/
+RUN npm run build:cvat-ui
+
+FROM nginx:mainline-alpine
+# Replace default.conf configuration to remove unnecessary rules
+COPY cvat-ui/react_nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=cvat-ui /tmp/cvat-ui/dist /usr/share/nginx/html/

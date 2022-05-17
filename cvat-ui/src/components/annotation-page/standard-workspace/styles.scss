@@ -1,0 +1,310 @@
+// Copyright (C) 2020-2021 Intel Corporation
+//
+// SPDX-License-Identifier: MIT
+
+@import 'base.scss';
+
+.cvat-standard-workspace.ant-layout {
+    height: 100%;
+}
+
+.cvat-context-image-wrapper {
+    height: auto;
+    width: $grid-unit-size * 32;
+    position: absolute;
+    top: $grid-unit-size;
+    right: $grid-unit-size;
+    z-index: 100;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    user-select: none;
+
+    > .cvat-context-image-wrapper-header {
+        height: $grid-unit-size * 4;
+        width: 100%;
+        z-index: 101;
+        background: rgba(0, 0, 0, 0.2);
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    > .ant-image {
+        margin: $grid-unit-size * 0.5;
+    }
+
+    > span {
+        position: absolute;
+        font-size: 18px;
+        top: 7px;
+        right: 7px;
+        z-index: 102;
+        color: white;
+
+        &:hover {
+            > svg {
+                transform: scale(1.2);
+            }
+        }
+    }
+}
+
+.cvat-context-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.cvat-objects-sidebar-sider {
+    top: 0;
+    right: 0;
+    left: auto;
+    background-color: $background-color-2;
+    border-left: 1px solid $border-color-1;
+    border-bottom: 1px solid $border-color-1;
+    border-radius: 4px 0 0 4px;
+    z-index: 2;
+}
+
+.cvat-objects-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    > .ant-layout-sider-children {
+        display: flex;
+        flex-direction: column;
+
+        > .cvat-objects-sidebar-tabs {
+            flex-grow: 10;
+
+            > div {
+                display: flex;
+
+                div[role='tabpanel'] {
+                    height: 100%;
+                }
+            }
+        }
+    }
+
+    &.ant-layout-sider-collapsed {
+        overflow: initial;
+    }
+}
+
+.cvat-rotate-canvas-controls-right > svg {
+    transform: scaleX(-1);
+}
+
+.cvat-canvas-controls-sidebar {
+    background-color: $background-color-2;
+    border-right: 1px solid $border-color-1;
+    overflow: hidden;
+}
+
+.cvat-cursor-control,
+.cvat-move-control,
+.cvat-rotate-canvas-control,
+.cvat-fit-control,
+.cvat-resize-control,
+.cvat-draw-rectangle-control,
+.cvat-draw-polygon-control,
+.cvat-draw-polyline-control,
+.cvat-draw-points-control,
+.cvat-draw-ellipse-control,
+.cvat-draw-cuboid-control,
+.cvat-setup-tag-control,
+.cvat-merge-control,
+.cvat-group-control,
+.cvat-split-track-control,
+.cvat-issue-control,
+.cvat-tools-control,
+.cvat-extra-controls-control,
+.cvat-opencv-control {
+    border-radius: 3.3px;
+    transform: scale(0.65);
+    padding: 2px;
+
+    &:hover:not(.cvat-disabled-canvas-control) {
+        background: $header-color;
+        transform: scale(0.75);
+    }
+
+    &:active:not(.cvat-disabled-canvas-control) {
+        transform: scale(0.65);
+    }
+
+    > svg {
+        transform: scale(0.8);
+    }
+}
+
+.cvat-antd-icon-control {
+    > svg {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+.cvat-active-canvas-control {
+    background: $header-color;
+    transform: scale(0.75);
+}
+
+.cvat-disabled-canvas-control > svg {
+    filter: opacity(0.45);
+}
+
+.cvat-rotate-canvas-controls-left,
+.cvat-rotate-canvas-controls-right {
+    transform: scale(0.65);
+    border-radius: 5px;
+
+    &:hover {
+        transform: scale(0.75);
+    }
+
+    &:active {
+        transform: scale(0.65);
+    }
+}
+
+.cvat-rotate-canvas-popover {
+    .ant-popover-inner-content {
+        padding: 0;
+    }
+}
+
+.cvat-draw-shape-popover,
+.cvat-opencv-control-popover,
+.cvat-setup-tag-popover,
+.cvat-tools-control-popover {
+    .ant-popover-inner-content {
+        padding: 0;
+    }
+}
+
+.cvat-tools-track-button,
+.cvat-tools-interact-button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.cvat-interactors-tips-icon-container {
+    text-align: center;
+    font-size: 20px;
+}
+
+.cvat-interactor-tip-container {
+    background: $background-color-2;
+    padding: $grid-unit-size;
+    box-shadow: $box-shadow-base;
+    width: $grid-unit-size * 40;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.cvat-interactor-tip-image {
+    width: $grid-unit-size * 37;
+}
+
+.cvat-draw-shape-popover-points-selector {
+    width: 100%;
+}
+
+.cvat-tools-control-popover-content,
+.cvat-opencv-control-popover-content {
+    width: fit-content;
+    padding: $grid-unit-size;
+    border-radius: $grid-unit-size;
+    background: $background-color-2;
+
+    .ant-tabs-tab {
+        width: $grid-unit-size * 14;
+        justify-content: center;
+    }
+}
+
+.cvat-opencv-initialization-button {
+    width: 100%;
+    margin: $grid-unit-size 0;
+}
+
+.cvat-opencv-drawing-tools {
+    margin-top: $grid-unit-size;
+}
+
+.cvat-opencv-drawing-tool {
+    padding: $grid-unit-size;
+    width: $grid-unit-size * 5;
+    height: $grid-unit-size * 5;
+
+    > i {
+        font-size: 16px;
+    }
+}
+
+.cvat-opencv-image-tool {
+    @extend .cvat-opencv-drawing-tool;
+}
+
+.cvat-opencv-image-tool-active {
+    color: #40a9ff;
+    border-color: #40a9ff;
+}
+
+.cvat-opencv-tracker-select {
+    width: 100%;
+}
+
+.cvat-opencv-tracking-label-select {
+    @extend .cvat-opencv-tracker-select;
+}
+
+.cvat-opencv-tracker-content {
+    margin-top: $grid-unit-size;
+}
+
+.cvat-setup-tag-popover-content,
+.cvat-draw-shape-popover-content {
+    padding: $grid-unit-size;
+    border-radius: $grid-unit-size;
+    background: $background-color-2;
+    width: 34 * $grid-unit-size;
+
+    > div {
+        margin-top: $grid-unit-size;
+    }
+
+    > div:nth-child(3) > div > div {
+        width: 100%;
+    }
+
+    > div:last-child {
+        span {
+            width: 100%;
+        }
+
+        button {
+            width: 100%;
+
+            &:nth-child(1) {
+                border-radius: 3px 0 0 3px;
+            }
+
+            &:nth-child(2) {
+                border-radius: 0 3px 3px 0;
+            }
+        }
+    }
+}
+
+.cvat-propagate-confirm {
+    > .ant-input-number {
+        width: 70px;
+        margin: 0 5px;
+    }
+}
