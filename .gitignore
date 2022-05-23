@@ -163,4 +163,4 @@ cython_debug/
 nuctl
 *.pt
 
-/apps/cvat/serverless/ruhyadi
+/apps/cvat/serverless/
