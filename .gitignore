@@ -164,3 +164,4 @@ nuctl
 *.pt
 
 /apps/cvat/serverless/
+sample/

@@ -21,22 +21,22 @@ if menu == "Model Registry":
     st.subheader('Repository')
     col01, col02, col03 = st.columns([3, 1, 1])
     with col01:
-        repo_url = st.text_input('Repository (*):', 'https://github.com/ruhyadi/sample-release')
+        repo_url = st.text_input('Repository (*):', 'https://github.com/ruhyadi/model-registry')
     with col02:
-        token = st.text_input('Token (*):', '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')
+        token = st.text_input('Token (*):', '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')
     with col03:
         branch = st.text_input('Branch (*):', 'main')
     
     st.subheader('Releases')
     col11, col12, col13 = st.columns([2, 2, 1])
     with col11:
-        release_title = st.text_input('Release title: (*)', 'v1.0 release')
+        release_title = st.text_input('Release title (*)', 'v1.0 release')
     with col12:
-        release_desc = st.text_input('Release description: (*)', 'Release assets v1.0')
+        release_desc = st.text_input('Release description (*)', 'Release assets v1.0')
     with col13:
-        release_tag = st.text_input('Release Tag (*):', 'v1.0')
+        release_tag = st.text_input('Release Tag (*)', 'v1.0')
 
-    assets = st.file_uploader('Model Asset(s) (*):', accept_multiple_files=True)
+    assets = st.file_uploader('Model Asset(s) (*)', accept_multiple_files=True)
 
     assets_btn = st.button('Upload Assets')
 

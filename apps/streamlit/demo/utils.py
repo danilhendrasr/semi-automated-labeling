@@ -96,19 +96,6 @@ class DatasetVersioning:
         tag = repo.create_tag(self.dataset_version, message=f'automatic version {self.dataset_version}')
         repo.remotes.origin.push(tag)
 
-if __name__ == '__main__':
-    # download dataset
-
-    downloader = DatasetVersioning(
-        'tasks',
-        'https://github.com/ruhyadi/sample',
-        'v1.0',
-        'sample.zip',
-        '3',
-        'YOLO 1.1')
-
-    downloader.download_dataset()
-
 class DeployModel:
     def __init__(
         self, 
@@ -166,19 +153,6 @@ class DeployModel:
             os.system(f'{deploy_gpu} {self.save_path}')
         else:
             os.system(f'{deploy_cpu} {self.save_path}')
-
-if __name__ == "__main__":
-
-    url = 'https://github.com/ruhyadi/light-repo'
-    remote = '/home/intern-didir/Repository/labelling/apps/cvat'
-    branch = 'main'
-    token = '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'
-    gpu = False
-
-    deployment = DeployModel(url, remote, branch, token, gpu)
-
-    # clone repository
-    deployment.clone_repo()
 
 class ModelRegistry():
     def __init__(self, git_url:str , token:str):
@@ -248,50 +222,3 @@ class ModelRegistry():
 
         print(response_assets)
         print(response_assets.json())
-
-if __name__ == '__main__':
-
-    import requests
-    import json
-
-    dict_ = {
-        "tag_name":"v1.0",
-        "target_commitish":"main",
-        "name":"v1.0",
-        "body":"Sample Release",
-        "draft":False,
-        "prerelease":False,
-        "generate_release_notes":False
-    }
-
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": "token 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",
-        "Content-Type": "application/octet-stream"
-    }
-
-    # release_json = json.dumps(dict_)
-
-    # release = requests.post(
-    #     'https://api.github.com/repos/ruhyadi/sample-release/releases',
-    #     headers=headers,
-    #     data=release_json
-    #     )
-
-    # print(release)
-    # print(release.json()['upload_url'])
-    os.chdir(os.getcwd())
-    assets_dict = {
-        "name" : open('sample011.zip', 'rb')
-    }
-
-    assets = requests.post(
-        'https://uploads.github.com/repos/ruhyadi/sample-release/releases/67446040/assets?name=sample011.zip',
-        headers=headers,
-        files=assets_dict
-    )
-
-    # print(release.json())
-    print(assets)
-    print(assets.json())
-    print(os.getcwd())
