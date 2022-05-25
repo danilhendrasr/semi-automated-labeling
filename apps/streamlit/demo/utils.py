@@ -12,11 +12,12 @@ from pathlib import Path
 from git import Repo
 from urllib.parse import quote
 
+
 class DatasetVersioning:
     def __init__(
         self,
         dataset_type: str,
-        repo: str, 
+        repo: str,
         dataset_version: str,
         filename: str,
         ids: str,
@@ -42,15 +43,17 @@ class DatasetVersioning:
         if output_dir is not None:
             self.output_dir = Path(output_dir) / self.username / self.repo_name
 
-    def clone_repo(self, branch:str = 'main', token: str = None):
-        # clone repository 
+    def clone_repo(self, branch: str = 'main', token: str = None):
+        # clone repository
         if not os.path.isdir(self.output_dir):
             os.makedirs(self.output_dir)
             if token is not None:
                 private_url = f'https://{token}@github.com/{self.username}/{self.repo_name}.git'
-                repo = Repo.clone_from(private_url, self.output_dir, branch=branch)
+                repo = Repo.clone_from(
+                    private_url, self.output_dir, branch=branch)
             else:
-                repo = Repo.clone_from(self.git_url, self.output_dir, branch=branch)
+                repo = Repo.clone_from(
+                    self.git_url, self.output_dir, branch=branch)
         else:
             print('[INFO] Directory already exist')
 
@@ -66,12 +69,14 @@ class DatasetVersioning:
             action=download'
 
         # download file
-        self.download_file(self.api_url, output=self.output_dir / self.filename)
-        
+        self.download_file(
+            self.api_url, output=self.output_dir / self.filename)
+
     def download_file(self, url, output):
         with requests.get(
             url,
-            auth=requests.auth.HTTPBasicAuth(self.cvat_username, self.cvat_password),
+            auth=requests.auth.HTTPBasicAuth(
+                self.cvat_username, self.cvat_password),
             stream=True
         ) as r:
             with open(output, 'wb') as f:
@@ -106,13 +111,13 @@ class DatasetVersioning:
 
 class DeployModel:
     def __init__(
-        self, 
-        url: str = 'https://github.com/username/repo_name', 
+        self,
+        url: str = 'https://github.com/username/repo_name',
         remote: str = None,
         branch: str = 'main',
         token: str = None,
         gpu: bool = False,
-        
+
     ):
         super().__init__()
 
@@ -128,10 +133,12 @@ class DeployModel:
         except:
             self.username = 'username'
             self.repo_name = 'repo_name'
-        self.save_path = str(Path(os.getcwd()) / 'serverless' / self.username / self.repo_name)
+        self.save_path = str(Path(os.getcwd()) /
+                             'serverless' / self.username / self.repo_name)
         if self.remote_dir is not None:
-            self.save_path = str(self.remote_dir / 'serverless' / self.username / self.repo_name)
-            
+            self.save_path = str(
+                self.remote_dir / 'serverless' / self.username / self.repo_name)
+
     def clone_repo(self):
         # make directory
         if not os.path.isdir(self.save_path):
@@ -140,12 +147,14 @@ class DeployModel:
             shutil.rmtree(self.save_path)
             os.makedirs(self.save_path)
 
-        # clone repository 
+        # clone repository
         if self.token is not None:
             private_url = f'https://{self.token}@github.com/{self.username}/{self.repo_name}.git'
-            repo = Repo.clone_from(private_url, self.save_path, branch=self.branch)
+            repo = Repo.clone_from(
+                private_url, self.save_path, branch=self.branch)
         else:
-            repo = Repo.clone_from(self.git_url, self.save_path, branch=self.branch)
+            repo = Repo.clone_from(
+                self.git_url, self.save_path, branch=self.branch)
 
         repo.git.checkout(self.branch)
 
@@ -164,9 +173,10 @@ class DeployModel:
         else:
             os.system(f'{deploy_cpu} {self.save_path}')
 
+
 class ModelRegistry():
-    def __init__(self, git_url:str , token:str):
-        
+    def __init__(self, git_url: str, token: str):
+
         self.git_url = git_url
         self.git_token = token
 
@@ -194,13 +204,13 @@ class ModelRegistry():
     def create_release(self, title, tag, branch, desc):
 
         release_dict = {
-            "tag_name":f"{tag}",
-            "target_commitish":f"{branch}",
-            "name":f"{title}",
-            "body":f"{desc}",
-            "draft":False,
-            "prerelease":False,
-            "generate_release_notes":False
+            "tag_name": f"{tag}",
+            "target_commitish": f"{branch}",
+            "name": f"{title}",
+            "body": f"{desc}",
+            "draft": False,
+            "prerelease": False,
+            "generate_release_notes": False
         }
 
         release_json = json.dumps(release_dict)
@@ -209,7 +219,7 @@ class ModelRegistry():
             f'https://api.github.com/repos/{self.username}/{self.reponame}/releases',
             headers=self.headers,
             data=release_json
-            )
+        )
 
         print(release_response)
         print(release_response.json())
@@ -221,9 +231,9 @@ class ModelRegistry():
         upload_url = upload_url.split('{')[0]
 
         assets_dict = {
-            "name" : open(filename, 'rb')
+            "name": open(filename, 'rb')
         }
-        #'https://uploads.github.com/repos/ruhyadi/sample-release/releases/66158665/assets'
+        # 'https://uploads.github.com/repos/ruhyadi/sample-release/releases/66158665/assets'
         response_assets = requests.post(
             f'{upload_url}?name={filename}',
             headers=self.headers,
