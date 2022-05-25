@@ -139,6 +139,8 @@ class DeployModel:
         else:
             repo = Repo.clone_from(self.git_url, self.save_path, branch=self.branch)
 
+        repo.git.checkout(self.branch)
+
         print(f'[INFO] Clone Repository to {self.save_path}')
 
     def deploy_model(self):

@@ -67,7 +67,7 @@ if menu == 'Model Deployment':
     st.subheader('Repository')
     cols01, cols02, cols03 = st.columns([2, 1, 1])
     with cols01:
-        repo = st.text_input("Repository", "https://github.com/ruhyadi/yolor")
+        repo = st.text_input("Repository", "https://github.com/ruhyadi/model-registry")
     with cols02:
         token = st.text_input('Token', "xxx")
     with cols03:
