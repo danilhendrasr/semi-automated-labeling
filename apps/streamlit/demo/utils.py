@@ -79,22 +79,30 @@ class DatasetVersioning:
 
         return output
 
-    def push_to_remote(self):
+    def push_to_remote(self, endpointurl):
         os.chdir(self.output_dir)
+        os.system(f'dvc init')
+        os.system(f'dvc config core.autostage true')
+        # TODO: Change gdrive to dynamics
+        os.system(f'dvc remote add --force --default myremote \
+                    gdrive://{endpointurl}')
         os.system(f'dvc add {self.filename}')
-        os.system(f'dvc push')
         
     def versioning_git(self, author:str = 'ruhyadi.dr@gmail.com'):
         # init repo
         repo = Repo(self.output_dir)
 
         # add changing file, includes: filename.dvc, .gitignore, etc
-        repo.git.add(all=True)
-        repo.git.commit('-m', f'version {self.dataset_version}', author=author)
+        repo.git.add('.')
+        repo.index.commit(f'version {self.dataset_version}')
+        origin = repo.remote(name='origin')
+        origin.push()
 
         # versioning git
-        tag = repo.create_tag(self.dataset_version, message=f'automatic version {self.dataset_version}')
+        tag = repo.create_tag(self.dataset_version, message=f'automatic version {self.dataset_version} annot with {self.annot_type}')
         repo.remotes.origin.push(tag)
+
+        os.system(f'dvc push')
 
 class DeployModel:
     def __init__(

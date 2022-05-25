@@ -99,7 +99,7 @@ if menu == "Dataset Versioning":
     with col02:
         repo = st.text_input('Dataset Registry (Repository):', 'https://github.com/ruhyadi/dataset-registry')
     with col03:
-        token = st.text_input('Token (*):', 'xxx')
+        token = st.text_input('Token (*):', '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')
     with col04:
         version = st.text_input('Dataset Version:', 'v1.0')
 
@@ -121,11 +121,12 @@ if menu == "Dataset Versioning":
     with col21:
         remote = st.selectbox('Remote Storage:', ('Google Drive', 'Azure Blob'))
     with col22:
-        endpointurl = st.text_input('Endpoint URL:', 'xxx')
+        endpointurl = st.text_input('Endpoint URL:', '1quvC2xMB89od6V0HPDf-wCpttU4XTP9t')
     with col23:
         auth_token = st.text_input('Authorization Token:', 'xxx')
 
     upload_btn = st.button('Versioning Dataset')
+
     if upload_btn:
         dataset = DatasetVersioning(
             dataset_type=dataset_type,
@@ -143,7 +144,7 @@ if menu == "Dataset Versioning":
         dataset.download_dataset()
 
         # push to storage
-        dataset.push_to_remote()
+        dataset.push_to_remote(endpointurl=endpointurl)
 
         # versioning
         dataset.versioning_git()
