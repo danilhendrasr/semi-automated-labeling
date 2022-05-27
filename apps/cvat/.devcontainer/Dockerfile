@@ -4,8 +4,13 @@
 ARG VARIANT="jammy"
 FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
 
+ENV DEBIAN_FRONTEND noninteractive
+
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && apt-get --no-install-recommends install -y build-essential \
-  curl git redis-server python3-dev python3-pip python3-venv python3-tk \ 
-  libldap2-dev libsasl2-dev pkg-config libavformat-dev libavcodec-dev \ 
-  libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+  curl git redis-server python3-dev python3-pip python3-venv python3-tk software-properties-common && \
+  curl -sL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs && \
+  add-apt-repository -y ppa:deadsnakes/ppa && add-apt-repository -y ppa:jonathonf/ffmpeg-4 && \
+  apt-get install -y ffmpeg libldap2-dev libsasl2-dev pkg-config libavformat-dev libavcodec-dev \
+  libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev \
+  python3.9 python3.9-distutils python3.9-dev
