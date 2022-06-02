@@ -10,3 +10,4 @@ RUN pip --no-cache-dir install gitpython
 RUN pip --no-cache-dir install streamlit
 RUN pip --no-cache-dir install streamlit-option-menu
 RUN pip --no-cache-dir install dvc[azure]
+RUN pip --no-cache-dir install dvc[gdrive]
