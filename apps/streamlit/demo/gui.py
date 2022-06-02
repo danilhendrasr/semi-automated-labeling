@@ -1,11 +1,14 @@
+import zipfile
+import os
 
 import streamlit as st
 from streamlit_option_menu import option_menu
-import os
+from ghapi.all import GhApi
+from dotenv import load_dotenv
 
 from utils import ModelRegistry, DeployModel, DatasetVersioning
-from io import StringIO
-import zipfile
+
+load_dotenv()
 
 # Using "with" notation
 with st.sidebar:
@@ -25,11 +28,11 @@ if menu == "Model Registry":
     st.subheader('Repository')
     col01, col02, col03 = st.columns([3, 1, 1])
     with col01:
-        repo_url = st.text_input(
-            'Repository (*):', 'https://github.com/ruhyadi/model-registry')
+        repo_name = st.text_input(
+            'Repository (*):', placeholder='https://github.com/username/repo')
     with col02:
-        token = st.text_input(
-            'Token (*):', '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')
+        gh_token = st.text_input(
+            'Token (*):', placeholder='ghp_xxx')
     with col03:
         branch = st.text_input('Branch (*):', 'main')
 
@@ -47,10 +50,10 @@ if menu == "Model Registry":
 
     if assets:
 
-        registry = ModelRegistry(git_url=repo_url, token=token)
+        registry = ModelRegistry(git_url=repo_name, token=gh_token)
 
         registry.clone_repo()
-        st.success(f'Success Clone Repository {repo_url.split("/")[3:5]}')
+        st.success(f'Success Clone Repository {repo_name.split("/")[3:5]}')
 
         upload_url = registry.create_release(
             release_title, release_tag, branch, release_desc)
@@ -74,9 +77,9 @@ if menu == 'Model Deployment':
     cols01, cols02, cols03 = st.columns([2, 1, 1])
     with cols01:
         repo = st.text_input(
-            "Repository", "https://github.com/ruhyadi/model-registry")
+            "Repository", placeholder="https://github.com/username/repo-name")
     with cols02:
-        token = st.text_input('Token', "xxx")
+        gh_token = st.text_input('Token', placeholder="ghp_xxx")
     with cols03:
         branch = st.text_input("Tag Release", "v1.0")
 
@@ -87,7 +90,7 @@ if menu == 'Model Deployment':
             url=repo,
             remote='/home/intern-didir/Repository/labelling/apps/cvat',
             branch=branch,
-            token=token,
+            token=gh_token,
             gpu=False,
         )
         Deployment.clone_repo()
@@ -95,32 +98,76 @@ if menu == 'Model Deployment':
 
 if menu == "Dataset Upload":
     st.title("Dataset Upload")
-    st.write('Fungsi digunakan untuk meng-upload dataset baru.')
+    st.write('Fungsi digunakan untuk meng-upload dataset baru. \
+        Fungsionalitas ini akan membuat repository Github/Gitlab baru, \
+            jadi API Token diperlukan untuk operasi ini.')
 
     st.subheader('Repository')
 
-    col01, col02, col03 = st.columns([3, 1, 1])
+    col01, col02, col03, col04 = st.columns([3, 1, 1, 1])
     with col01:
-        repo_url = st.text_input(
-            'Repository (*):', placeholder='https://github.com/ruhyadi/sample-release')
+        repo_name = st.text_input(
+            'Repository Name (*):', placeholder='sample-release')
     with col02:
-        token = st.text_input('Token (*):', placeholder="xxx")
+        repo_visibility = st.selectbox(
+            "Repo visibility: ", ("Private", "Public"))
     with col03:
-        branch = st.text_input('Tag (*):', placeholder="vX.X")
+        gh_token = st.text_input(
+            'Token (*):', placeholder="xxx")
+    with col04:
+        initial_tag = st.text_input('Tag (*):', "v1.0")
 
     uploaded_file = st.file_uploader('Dataset (*):', type=".zip")
     upload_btn = st.button('Upload')
 
     if upload_btn:
-        if repo_url is None:
+        if repo_name is None:
             st.write("Repo empty")
 
         if uploaded_file is not None:
             bytes_data = uploaded_file.getvalue()
+            NEW_REPO_DIR = "/tmp/dataset-upload"
+            DATA_DIR = f"{NEW_REPO_DIR}/dataset"
 
-            file = open('/tmp/test.zip', 'wb')
+            azure_account_name = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+            azure_access_key = os.getenv("AZURE_STORAGE_ACCESS_KEY")
+
+            print(azure_account_name)
+            print(azure_access_key)
+
+            os.system(
+                f"mkdir -p {NEW_REPO_DIR} \
+                    && cd {NEW_REPO_DIR} \
+                    && git init \
+                    && git branch -M main \
+                    && dvc init \
+                    && dvc remote add -d main azure://dataset-upload \
+                    && dvc remote modify --local main account_name '{azure_account_name}' \
+                    && dvc remote modify --local main account_key '{azure_access_key}' \
+                    && git add .dvc .dvcignore \
+                    && git commit -m \"init dvc\"")
+
+            os.mkdir(DATA_DIR)
+            file = open(f'{DATA_DIR}/data.zip', 'wb')
             file.write(bytes_data)
             file.close()
+
+            with zipfile.ZipFile(f'{DATA_DIR}/data.zip') as zipObj:
+                zipObj.extractall(path=DATA_DIR)
+                os.remove(f"{DATA_DIR}/data.zip")
+
+                github_client = GhApi(token=gh_token)
+                github_client.repos.create_for_authenticated_user(
+                    name=repo_name, private=bool(repo_visibility == "Private"))
+
+                os.system(f"cd {NEW_REPO_DIR} \
+                    && dvc add dataset \
+                    && git add .gitignore dataset.dvc \
+                    && git commit -m \"add initial version of dataset\" \
+                    && dvc push \
+                    && git tag {initial_tag} \
+                    && git remote add origin git@github.com:danilhendrasr/{repo_name} \
+                    && git push -u origin main --tags")
 
 
 if menu == "Dataset Preprocessing":
@@ -131,10 +178,10 @@ if menu == "Dataset Preprocessing":
 
     col01, col02, col03 = st.columns([3, 1, 1])
     with col01:
-        repo_url = st.text_input(
-            'Repository (*):', placeholder='https://github.com/ruhyadi/sample-release')
+        repo_name = st.text_input(
+            'Repository (*):', placeholder='https://github.com/username/repo-name')
     with col02:
-        token = st.text_input('Token (*):', placeholder='xxx')
+        gh_token = st.text_input('Token (*):', placeholder='ghp_xxx')
     with col03:
         branch = st.text_input('Tag (*):', placeholder='vX.X')
 
@@ -161,9 +208,10 @@ if menu == "Dataset Versioning":
             'Dataset Type:', ('Projects', 'Tasks'), key='radio001')
     with col02:
         repo = st.text_input('Dataset Registry (Repository):',
-                             'https://github.com/ruhyadi/dataset-registry')
+                             placeholder='https://github.com/username/repo-name')
     with col03:
-        token = st.text_input('Token (*):', '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')
+        gh_token = st.text_input(
+            'Token (*):', placeholder='ghp_xxx')
     with col04:
         version = st.text_input('Dataset Version:', 'v1.0')
 
@@ -186,9 +234,10 @@ if menu == "Dataset Versioning":
         remote = st.selectbox(
             'Remote Storage:', ('Google Drive', 'Azure Blob'))
     with col22:
-        endpointurl = st.text_input('Endpoint URL:', '1quvC2xMB89od6V0HPDf-wCpttU4XTP9t')
+        endpointurl = st.text_input(
+            'Endpoint URL:', placeholder='1quvC2xMB89od6V0HPDf-wCpttU4XTP9t')
     with col23:
-        auth_token = st.text_input('Authorization Token:', 'xxx')
+        auth_token = st.text_input('Authorization Token:', placeholder='xxx')
 
     upload_btn = st.button('Versioning Dataset')
 
