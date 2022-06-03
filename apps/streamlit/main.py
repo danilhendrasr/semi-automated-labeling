@@ -1,3 +1,4 @@
 import page
 
-page.dataset_preprocessing(page_key='Dataset Preprocessing')
+if __name__ == '__main__':
+    page.dataset_preprocessing(page_key='Dataset Preprocessing')
