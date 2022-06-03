@@ -7,28 +7,27 @@ streamlit
  ├─ function
  |   ├─ __init__.py
  |   |
- |   ├─ function_a
+ |   ├─ function_name_1
  |   |   ├─ __init__.py        
- |   |   ├─ sub_function_a_1.py
- |   |   └─ sub_function_a_2.py
+ |   |   ├─ function_name_1_sub_1.py
+ |   |   └─ function_name_1_sub_1.py
  |   |
- |   └─ function_b
+ |   └─ function_name_2
  |       ├─ __init__.py        
- |       └─ sub_function_b_1
+ |       └─ function_name_2_sub_1
  |           ├─ __init__.py
- |           └─ sub_function_b_1_1.py
- |           └─ sub_function_b_1_2.py
+ |           └─ function_name_2_sub_1_sub_1.py
+ |           └─ function_name_2_sub_1_sub_2.py
  |
  ├─ section
  |   ├─ __init__.py
- |   ├─ section_a.py
- |   └─ section_b.py
+ |   ├─ section_name_1.py
+ |   └─ section_name_2.py
  |
  ├─ page
  |   ├─ __init__.py
- |   ├─ page_1.py
- |   ├─ page_2.py
- |   └─ page_3.py
+ |   ├─ page_name_1.py
+ |   └─ page_name_2.py
  |   
  └─ main.py
 ```
@@ -106,3 +105,14 @@ If the function doesn't contain any `streamlit` functionality, it'll be okay to 
 def function_name_1():
     pass
 ```
+
+## Coding Style Convention
+
+- All file (package, module, program) must be written in `lower_snake_case`.
+- All class must be written in `UpperCamelCase`.
+
+For more information about writing convention, read [PEP 8 – Style Guide for Python Code](https://peps.python.org/pep-0008/).
+
+---
+
+This project was developed as part of Nodeflux Internship x Kampus Merdeka.
