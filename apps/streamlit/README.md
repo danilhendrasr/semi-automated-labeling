@@ -60,7 +60,7 @@ from .page_name_2 import page_name_2
 
 ### `page/page_name_1.py`
 ```py
-import streamlit
+import streamlit as st
 import section
 def page_name_1(page_key):
     st.header('page_name_1')
@@ -79,7 +79,7 @@ from .section_name_2 import section_name_2
 
 ### `section/section_name_1.py`
 ```py
-import streamlit
+import streamlit as st
 import function
 def section_name_1(section_key):
     st.subheader('section_name_1')
@@ -97,11 +97,12 @@ from .function_name_2 import function_name_2
 
 ### `function/function_name_1.py`
 ```py
-import streamlit
+import streamlit as st
 def function_name_1(function_key):
     pass
 ```
-
-
-
-
+If the function doesn't contain any `streamlit` functionality, it'll be okay to not include `function_key` in the parameters.
+```py
+def function_name_1():
+    pass
+```
