@@ -86,7 +86,7 @@ def section_name_1(section_key):
     if process: function.function_name_1(function_key =f'{section_key} function_name_1')
 ```
 
-## function
+## Function
 
 ### `function/__init__.py`
 ```py
