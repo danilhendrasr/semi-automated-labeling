@@ -1,5 +1,5 @@
-import function
 import streamlit as st
+import function
 
 def preprocessing(path, available_preprocessing_list, section_key):
     st.subheader('Preprocessing')
@@ -15,7 +15,7 @@ def preprocessing(path, available_preprocessing_list, section_key):
     preprocess_list = []
     for i in range(st.session_state[f'{section_key} num_preprocess']):
         choice = st.selectbox(f'Select Preprocess', available_preprocessing_list, key=f'{section_key} select-preprocess {i}')
-        params = function.preprocessing.inputs(choice, key=f'{section_key} select-preprocess {i}')
+        params = function.preprocessing.inputs(choice, function_key=f'{section_key} select-preprocess {i}')
         preprocess_list.append({
             'name' : choice,
             'params' : params

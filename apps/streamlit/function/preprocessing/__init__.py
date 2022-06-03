@@ -1,9 +1,9 @@
 from . import process
 
-def inputs(name, key):
-    if name == 'grayscale': return process.grayscale.inputs(key)
-    if name == 'resize': return process.resize.inputs(key)
-    if name == 'scale': return process.scale.inputs(key)
+def inputs(name, function_key):
+    if name == 'grayscale': return process.grayscale.inputs(function_key)
+    if name == 'resize': return process.resize.inputs(function_key)
+    if name == 'scale': return process.scale.inputs(function_key)
 
 def preprocess(path, preprocess_list):
     for p in preprocess_list:

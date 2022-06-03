@@ -1,6 +1,6 @@
 import streamlit as st
 
-def inputs(key):
+def inputs(function_key):
     params = None
     return params
 

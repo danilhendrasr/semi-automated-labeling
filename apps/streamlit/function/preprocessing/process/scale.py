@@ -1,7 +1,7 @@
 import streamlit as st
 
-def inputs(key):
-    scale = st.text_input('Scale', key=f'process scale : inputs scale {key}')
+def inputs(function_key):
+    scale = st.text_input('Scale', key=f'{function_key} input scale')
     params = scale
     return params
 

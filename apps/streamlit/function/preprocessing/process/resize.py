@@ -1,9 +1,9 @@
 import streamlit as st
 
-def inputs(key):
+def inputs(function_key):
     col = st.columns([1, 1])
-    with col[0]: width = st.text_input('Width', key=f'process resize : inputs width {key}')
-    with col[1]: height = st.text_input('Height', key=f'process resize : inputs height {key}')
+    with col[0]: width = st.text_input('Width', key=f'{function_key} input width')
+    with col[1]: height = st.text_input('Height', key=f'{function_key} input height')
     params = (width, height)
     return params
 
