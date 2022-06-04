@@ -1,4 +1,5 @@
 
+from platform import release
 from pprint import pprint
 import git
 import os
@@ -14,11 +15,11 @@ class Repository:
     def __init__(
         self,
         repo_url: str,
-        tag: str, # or branch
+        ref: str, # or branch
         token: str,
     ):
         self.repo_url = repo_url
-        self.tag = tag
+        self.ref = ref
         self.token = token
 
         self.username = self.repo_url.split('/')[3]
@@ -66,19 +67,65 @@ class Repository:
         repo = git.Repo.clone_from(
             url=self.repo_url,
             to_path=self.repo_dir,
-            branch=self.tag
+            branch=self.ref
             )
 
         print(f'[INFO] Clone Repo in {self.repo_dir}')
         return repo
     
+    def release(self, title: str, desc: str, target: str):
+        """ create release assets from tag (target) """
+        release_dict = {
+            "tag_name": target,
+            "target_commitish": self.ref,
+            "name": title,
+            "body": desc,
+            "draft": False,
+            "prerelease": False,
+            "generate_release_notes": True
+        }
 
-    
+        response = requests.post(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases',
+            headers=self.headers,
+            data=json.dumps(release_dict)
+            )
+
+        if response == '<Response [201]>':
+            print(response)
+            print(f'[INFO] Success release {target}')
+        else:
+            print(response)
+            pprint(response.json())
+
+        # release id
+        return response.json()['id']
+
+    def upload_assets(self, filename, release_id):
+        """ upload assets to release assets """
+        assets_dict = {
+            "name": open(filename, 'rb')
+        }
+
+        response = requests.post(
+            url=f'https://uploads.github.com/repos/{self.username}/{self.repo_name}/releases/{release_id}/assets?name={filename}',
+            headers=self.headers,
+            files=assets_dict
+            )
+
+        if response == '<Response [201]>':
+            print(response)
+            print(f'[INFO] Success upload {filename}')
+        else:
+            print(response)
+            pprint(response.json())
+
+
 if __name__ == '__main__':
 
     repository = Repository(
         repo_url='https://github.com/ruhyadi/sample-release-1',
-        tag='v1.0',
+        ref='v1.0',
         token='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'
     )
 
