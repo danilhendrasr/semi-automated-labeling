@@ -1,5 +1,6 @@
 """ Repository class """
 
+from re import L
 import sys
 import os
 import json
@@ -96,7 +97,19 @@ class Repository:
 
         print(f'[INFO] Success create tag {tag}')
 
-    def release(self, title: str, desc: str, tag: str):
+    def get_release(self, tag: str):
+        """ Get release id by tag """
+        response = requests.get(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/tags/{tag}',
+            headers=self.headers
+        )
+
+        print(response)
+        print(f'[INFO] Get release id {response.json()["id"]}')
+
+        return response.json()['id']
+
+    def create_release(self, title: str, desc: str, tag: str):
         """ create release assets from tag (target) """
         release_dict = {
             "tag_name": tag,
@@ -115,10 +128,17 @@ class Repository:
             )
 
         print(response)
-        print(f'[INFO] Success release {tag}')
+        print(f'[INFO] Success release {tag} with release id {response.json()["id"]}')
+            
+    def delete_release(self, release_id: str):
+        """ Delete release by release id """
+        response = requests.delete(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/{release_id}',
+            headers=self.headers
+            )
 
-        # release id
-        return response.json()['id']
+        print(response)
+        print(f'[INFO] Success deleted release {release_id}')
 
     def upload_assets(self, filename: str, release_id: str):
         """ upload assets to release assets """
