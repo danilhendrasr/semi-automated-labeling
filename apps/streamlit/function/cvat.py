@@ -19,10 +19,12 @@ class CVAT:
         session: str,
         api: str,
         credentials: Tuple,
+        serverless_dir: str,
     ):
         self.session = session
         self.api = api
         self.login(credentials)
+        self.serverless_dir = serverless_dir
 
     def tasks_list(self, use_json_output=True, **kwargs):
         """ List all tasks in either basic or JSON format. """
@@ -285,6 +287,16 @@ class CVAT:
         logger_string = "Task has been imported sucessfully. Task ID: {}".format(task_id)
         log.info(logger_string)
 
+    def deploy_model(self, repo_dir: str, mode: str = 'cpu'):
+        deploy_cpu = os.path.join(self.serverless_dir, 'deploy_cpu.sh')
+        deploy_gpu = os.path.join(self.serverless_dir, 'deploy_cpu.sh')
+
+        os.chdir(self.serverless_dir)
+        if self.gpu is True:
+            os.system(f'{deploy_gpu} {repo_dir}')
+        else:
+            os.system(f'{deploy_cpu} {repo_dir}')
+
     def login(self, credentials):
         url = self.api.login
         auth = {'username': credentials[0], 'password': credentials[1]}
@@ -357,7 +369,13 @@ if __name__ == '__main__':
     api = CVAT_API(host='http://192.168.103.67:8080')
     session = requests.Session()
     credentials = ['superadmin', 'KECILSEMUA']
-    cvat = CVAT(session, api, credentials)
+    serverless_dir = '/home/intern-didir/Repository/labelling/apps/cvat/serverless'
+    cvat = CVAT(
+        session=session, 
+        api=api, 
+        credentials=credentials,
+        serverless_dir=serverless_dir
+    )
 
     # tasks_list = cvat.tasks_list()
 
