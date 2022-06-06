@@ -1,3 +1,5 @@
+""" Repository section """
+
 import streamlit as st
 
 def clone(section_key: str, is_btn: bool = False):
@@ -49,4 +51,3 @@ def release(section_key: str):
     btn = st.button(label='Release Assets', key=f'{section_key}_release')
     
     return [title, desc, tag, assets, btn]
-
