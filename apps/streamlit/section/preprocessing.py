@@ -1,7 +1,7 @@
 import streamlit as st
 import function
 
-def preprocessing(path, available_preprocessing_list, section_key):
+def preprocessing(source, target, available_preprocessing_list, section_key):
     st.subheader('Preprocessing')
     preprocess_col = st.columns([1, 2, 2])
     with preprocess_col[0]: add_preprocess = st.button('Add Preprocess', key=f'{section_key} add preprocess button') 
@@ -22,4 +22,4 @@ def preprocessing(path, available_preprocessing_list, section_key):
         })     
     
     process = st.button('Process', key=f'{section_key} process button')
-    if process: function.preprocessing.preprocess(path, preprocess_list)
+    if process: function.preprocessing.preprocess(source, target, preprocess_list)
