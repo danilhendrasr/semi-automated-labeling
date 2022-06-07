@@ -1,2 +1,2 @@
 from . import preprocessing
-from .repository import Repository
+from . import repository

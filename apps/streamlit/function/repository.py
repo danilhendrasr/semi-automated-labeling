@@ -1,5 +1,6 @@
 """ Repository class """
 
+from re import L
 import sys
 import os
 import json
@@ -19,15 +20,16 @@ class Repository:
         repo_url: str,
         ref: str, # or branch
         token: str,
+        dump_dir: str = os.getcwd()
     ):
-        self.repo_url = repo_url
         self.ref = ref
         self.token = token
 
-        self.username = self.repo_url.split('/')[3]
-        self.repo_name = self.repo_url.split('/')[4]
+        self.username = repo_url.split('/')[3]
+        self.repo_name = repo_url.split('/')[4]
+        self.repo_url = f'https://{self.username}:{self.token}@github.com/{self.username}/{self.repo_name}.git'  
         # TODO: change cwd to tmp
-        self.repo_dir = Path(os.getcwd()) / self.username / self.repo_name
+        self.repo_dir = Path(dump_dir) / self.username / self.repo_name
 
         self.headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -51,9 +53,9 @@ class Repository:
             data=json.dumps(init_dict)
         )
 
-        if response == '<Response [201]>':
+        if str(response) == '<Response [201]>':
             print(response)
-            print(f'[INFO] Success initialize {self.repo_url}')
+            print(f'[INFO] Success initialize {self.username}/{self.repo_name}')
         else:
             print(response)
             pprint(response.json())
@@ -96,7 +98,32 @@ class Repository:
 
         print(f'[INFO] Success create tag {tag}')
 
-    def release(self, title: str, desc: str, tag: str):
+    def list_release(self, get_tags: bool = False):
+        """ List all release """
+        response = requests.get(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases',
+            headers=self.headers
+        )
+        print(response)
+        
+        if get_tags:
+            return [tag['tag_name'] for tag in response.json()]
+        else:
+            return response
+
+    def get_release(self, tag: str):
+        """ Get release id by tag """
+        response = requests.get(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/tags/{tag}',
+            headers=self.headers
+        )
+
+        print(response)
+        print(f'[INFO] Get release id {response.json()["id"]}')
+
+        return response.json()['id']
+
+    def create_release(self, title: str, desc: str, tag: str):
         """ create release assets from tag (target) """
         release_dict = {
             "tag_name": tag,
@@ -115,10 +142,17 @@ class Repository:
             )
 
         print(response)
-        print(f'[INFO] Success release {tag}')
+        print(f'[INFO] Success release {tag} with release id {response.json()["id"]}')
+            
+    def delete_release(self, release_id: str):
+        """ Delete release by release id """
+        response = requests.delete(
+            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/{release_id}',
+            headers=self.headers
+            )
 
-        # release id
-        return response.json()['id']
+        print(response)
+        print(f'[INFO] Success deleted release {release_id}')
 
     def upload_assets(self, filename: str, release_id: str):
         """ upload assets to release assets """
@@ -139,9 +173,9 @@ class Repository:
 if __name__ == '__main__':
 
     repository = Repository(
-        repo_url='https://github.com/ruhyadi/sample-repo',
+        repo_url='https://github.com/ruhyadi/sample-release',
         ref='main',
-        token='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'
+        token='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'
     )
 
     # repository.init(is_private=True)
@@ -154,3 +188,6 @@ if __name__ == '__main__':
     #     )
     # print(id) # 68624638
     # repository.upload_assets('newfile6', release_id='68624638')
+
+    # tag = repository.list_release(get_tags=True)
+    # print(tag)

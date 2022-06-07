@@ -287,16 +287,6 @@ class CVAT:
         logger_string = "Task has been imported sucessfully. Task ID: {}".format(task_id)
         log.info(logger_string)
 
-    def deploy_model(self, repo_dir: str, mode: str = 'cpu'):
-        deploy_cpu = os.path.join(self.serverless_dir, 'deploy_cpu.sh')
-        deploy_gpu = os.path.join(self.serverless_dir, 'deploy_cpu.sh')
-
-        os.chdir(self.serverless_dir)
-        if self.gpu is True:
-            os.system(f'{deploy_gpu} {repo_dir}')
-        else:
-            os.system(f'{deploy_cpu} {repo_dir}')
-
     def login(self, credentials):
         url = self.api.login
         auth = {'username': credentials[0], 'password': credentials[1]}
@@ -360,6 +350,16 @@ class CVAT_API:
     @property
     def login(self):
         return self.base + 'auth/login'
+
+def deploy_model(repo_dir: str, serverless_dir: str, mode: str = 'cpu'):
+    deploy_cpu = os.path.join(serverless_dir, 'deploy_cpu.sh')
+    deploy_gpu = os.path.join(serverless_dir, 'deploy_cpu.sh')
+
+    os.chdir(serverless_dir)
+    if mode == 'gpu':
+        os.system(f'{deploy_gpu} {repo_dir}')
+    else:
+        os.system(f'{deploy_cpu} {repo_dir}')
 
 
 if __name__ == '__main__':
