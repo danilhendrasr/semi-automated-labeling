@@ -3,6 +3,8 @@
 import json
 import logging
 import os
+import shutil
+from zipfile import ZipFile
 import requests
 from io import BytesIO
 import mimetypes
@@ -16,15 +18,15 @@ log = logging.getLogger(__name__)
 class CVAT:
     def __init__(
         self,
-        session: str,
-        api: str,
-        credentials: Tuple,
-        serverless_dir: str,
+        username: str,
+        password: str,
+        host: str,
+        dump_dir: str
     ):
-        self.session = session
-        self.api = api
-        self.login(credentials)
-        self.serverless_dir = serverless_dir
+        self.session = requests.Session()
+        self.api = CVAT_API(host=host)
+        self.login([username, password])
+        self.dump_dir = dump_dir
 
     def tasks_list(self, use_json_output=True, **kwargs):
         """ List all tasks in either basic or JSON format. """
@@ -51,6 +53,13 @@ class CVAT:
             response.raise_for_status()
 
         return output
+
+    def get_dataset_name(self, task_id):
+        """ Get dataset name by task id """
+        output = self.tasks_list(use_json_output=True)
+        dataset_name = [data['name'] for data in output if data['id'] == task_id]
+
+        return dataset_name.replace(' ', '_').lower()
 
     def tasks_data(self, task_id, resource_type, resources, **kwargs):
         """ Add local, remote, or shared files to an existing task. """
@@ -177,7 +186,7 @@ class CVAT:
             outfile = 'task_{}_frame_{:06d}{}'.format(task_id, frame_id, im_ext)
             im.save(os.path.join(outdir, outfile))
 
-    def tasks_dump_annotations(self, task_id, fileformat, filename, **kwargs):
+    def tasks_dump_annotations(self, task_id, fileformat, filename, extract=False, **kwargs):
         """ Download annotations for a task in the specified format
         (e.g. 'YOLO ZIP 1.0')."""
         url = self.api.tasks_id(task_id)
@@ -201,7 +210,16 @@ class CVAT:
         with open(filename, 'wb') as fp:
             fp.write(response.content)
 
-    def tasks_dump(self, task_id, fileformat, filename, **kwargs):
+        if extract:
+            dataset_dir = os.path.join(self.dump_dir, filename.split('.')[0])
+            with ZipFile(filename, 'r') as zip:
+                try:
+                    os.makedirs(dataset_dir)
+                except:
+                    shutil.rmtree(dataset_dir)
+                zip.extractall(dataset_dir)
+
+    def tasks_dump(self, task_id, fileformat, filename, extract=False, **kwargs):
         """ Download data & annotations for a task in the specified format
         (e.g. 'YOLO ZIP 1.0')."""
         url = self.api.tasks_id(task_id)
@@ -223,6 +241,15 @@ class CVAT:
 
         with open(filename, 'wb') as fp:
             fp.write(response.content)
+
+        if extract:
+            dataset_dir = os.path.join(self.dump_dir, filename.split('.')[0])
+            with ZipFile(filename, 'r') as zip:
+                try:
+                    os.makedirs(dataset_dir)
+                except:
+                    shutil.rmtree(dataset_dir)
+                zip.extractall(dataset_dir)
 
     def tasks_upload(self, task_id, fileformat, filename, **kwargs):
         """ Upload annotations for a task in the specified format
@@ -365,16 +392,10 @@ def deploy_model(repo_dir: str, serverless_dir: str, mode: str = 'cpu'):
 if __name__ == '__main__':
 
     from pprintpp import pprint
-
-    api = CVAT_API(host='http://192.168.103.67:8080')
-    session = requests.Session()
-    credentials = ['superadmin', 'KECILSEMUA']
-    serverless_dir = '/home/intern-didir/Repository/labelling/apps/cvat/serverless'
     cvat = CVAT(
-        session=session, 
-        api=api, 
-        credentials=credentials,
-        serverless_dir=serverless_dir
+        username='superadmin',
+        password='KECILSEMUA',
+        host='http://192.168.103.67:8080'
     )
 
     # tasks_list = cvat.tasks_list()
