@@ -1,9 +1,11 @@
 """ Utils functions """
 
-import time
 from typing import List
-import numpy as np
 import json
+import os
+
+import yaml
+from yaml.loader import SafeLoader
 
 import torch
 import torchvision
@@ -25,6 +27,7 @@ def parse_coco(json_file):
         SCORES.append(1.00)
 
     return ANNOTATIONS, SCORES
+
 
 def apply_nms(
     json_file: str,
@@ -57,6 +60,17 @@ def xywh2xyxy(bbox):
     x2, y2 = round(w + x1, 2), round(h + y1, 2)
 
     return [x1, y1, x2, y2]
+
+
+def change_model_tag(repo_dir: str, repo_url: str, tag: str):
+    """Change function.yaml baseImage according to repository tag"""
+    yaml_path = os.path.join(repo_dir, "function.yaml")
+    function_yaml = yaml.load(open(yaml_path), Loader=SafeLoader)
+    repo = "/".join(repo_url.split("/")[3:5])
+    function_yaml["spec"]["build"]["baseImage"] = f"{repo}:{tag}"
+    # save new yaml
+    with open(yaml_path, "w") as f:
+        yaml.dump(function_yaml, f)
 
 
 if __name__ == "__main__":
