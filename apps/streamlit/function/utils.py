@@ -26,7 +26,6 @@ def parse_coco(json_file):
 
     return ANNOTATIONS, SCORES
 
-
 def apply_nms(
     json_file: str,
     annotations: List,
