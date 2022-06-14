@@ -179,3 +179,5 @@ apps/streamlit/nms-coco
 *.jpg
 *.json
 *.zip
+
+/apps/streamlit/dump_versioning

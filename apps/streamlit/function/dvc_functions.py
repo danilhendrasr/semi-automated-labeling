@@ -35,14 +35,18 @@ def add(repo_dir: str, folders: List = None, auto_stage: bool = True):
             print(f"[INFO] Success add {folder} to dvc")
 
 
-def remote(repo_dir: str, remote_name: str, endpoint: str, remotes: str):
+def remote(repo_dir: str, endpoint: str, remotes: str, remote_name: str = None):
     """add remotes storage"""
 
     assert remotes in ["gdrive", "azure", "s3"], "Remote Storage Not Supported"
 
+    if remote_name is None:
+        remote_name = remotes
+
     os.chdir(repo_dir)
     if remotes == "gdrive":
         os.system(f"dvc remote add --default {remote_name} gdrive://{endpoint}")
+    # TODO: add more remotes storages
 
     print(f"[INFO] Success add {remotes} remote storage")
 
@@ -72,11 +76,11 @@ if __name__ == "__main__":
     # repo.clone()
     init(repo_dir=repo.repo_dir, force=True)
     add(repo_dir=repo.repo_dir, auto_stage=True)
-    repo.tag(tag="v1.0.2")
     remote(
         repo_dir=repo.repo_dir,
         remote_name="gdrive_remotes",
         endpoint="1RWymQlVq0Mes8BH2WeHn7mKCllxHcK-d",
         remotes="gdrive",
     )
+    repo.tag(tag="v1.0.2")
     push(repo_dir=repo.repo_dir)
