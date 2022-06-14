@@ -13,6 +13,8 @@ from PIL import Image
 
 from typing import Tuple
 
+from yaml import dump
+
 log = logging.getLogger(__name__)
 
 class CVAT:
@@ -395,8 +397,11 @@ if __name__ == '__main__':
     cvat = CVAT(
         username='superadmin',
         password='KECILSEMUA',
-        host='http://192.168.103.67:8080'
+        host='http://192.168.103.67:8080',
+        dump_dir='./'
     )
+
+    cvat.tasks_upload(task_id=41, fileformat='COCO 1.0', filename='/home/intern-didir/Repository/labelling/apps/streamlit/41/labels.json')
 
     # tasks_list = cvat.tasks_list()
 

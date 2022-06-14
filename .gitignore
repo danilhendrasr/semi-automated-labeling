@@ -169,3 +169,13 @@ apps/cvat/serverless/ruhyadi/yolor
 
 yolov5-nodeflux
 notebook.ipynb
+
+master.py
+run.sh
+/yolov5
+apps/streamlit/nms
+apps/streamlit/nms-coco
+
+*.jpg
+*.json
+*.zip
