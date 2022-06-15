@@ -4,7 +4,7 @@ import os
 
 import streamlit as st
 from function.repository import Repository
-import function.dvc_functions as depece
+from function.dvc import DVC
 from function import cvat
 
 
@@ -35,15 +35,13 @@ def dataset_versioning(
     with col0[0]:
         url = st.text_input(
             label="Repository URL",
-            # value="https://github.com/username/reponame",
-            value="https://github.com/ruhyadi/sample-dataset-registry",
+            value="https://github.com/username/reponame",
             key=f"{page_key}_versioning",
         )
     with col0[1]:
         token = st.text_input(
             label="Personal Access Token",
-            # value="xxx",
-            value="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",
+            value="xxx",
             key=f"{page_key}_versioning",
             type="password",
         )
@@ -77,22 +75,6 @@ def dataset_versioning(
         with col1[3]:
             merge_ref = st.selectbox(label="Merging Dataset", options=release_tags)
 
-    # INFO: Remote Storage and Endpoint (DEPRICATED)
-    # col2 = st.columns([1, 2])
-    # with col2[0]:
-    #     remote_type = st.selectbox(
-    #         label="Remote Storage",
-    #         options=["gdrive", "azure"],
-    #         key=f"{page_key}_versioning",
-    #     )
-    # with col2[1]:
-    #     endpoint = st.text_input(
-    #         label="Endpoint",
-    #         value="xxx",
-    #         type="password",
-    #         key=f"{page_key}_versioning",
-    #     )
-
     col3 = st.columns([2, 2, 1])
     with col3[0]:
         title = st.text_input(
@@ -116,13 +98,10 @@ def dataset_versioning(
     if btn:
         # init repository
         if is_merging == "True":
-            repo = Repository(
-                repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir
-            )
+            repo = Repository(repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir)
         else:
             # default to main branch
             repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
-
         # init dataset
         dataset = cvat.CVAT(
             username=username,
@@ -135,37 +114,23 @@ def dataset_versioning(
         repo.clone(force=True)
         st.success(f'Success Dataset Repository {"/".join(url.split("/")[3:5])}')
 
-        # dump dataset
-        dataset.tasks_dump(
-            task_id=task_id, fileformat=annot_type, extract=True, remove_zip=True
-        )
-        st.success(f"[INFO] Download Dataset Task {task_id}")
+        # init DVC
+        dvc = DVC(path=repo.repo_dir)
 
+        # dump dataset
+        dataset.tasks_dump(task_id=task_id, fileformat=annot_type, extract=True, remove_zip=True)
+        st.success(f"[INFO] Download Dataset Task {task_id}")
         # pull dataset for merging
         if is_merging == "True":
-            depece.pull(repo_dir=repo.repo_dir)
-
-        # CAUTION: dvc init (DEPRICATED)
-        # depece.init(repo_dir=repo.repo_dir, force=True)
-        # st.success(f"Success Init DVC")
-
+            dvc.pull() 
         # add dataset to dvc
-        depece.add(repo_dir=repo.repo_dir)
+        dvc.add(item='dataset')
         st.success(f"Success Add Dataset to DVC")
-
-        # CAUTION: add remotes (DEPRICATED)
-        # depece.remote(
-        #     repo_dir=repo.repo_dir,
-        #     endpoint="1PSuz_MQr61Zh1R2PzfnVjEecRWGkrvpV",
-        #     remotes='gdrive',
-        # )
-        # st.success(f"Success Add Remotes Storage")
-
         # # tag version dataset
         repo.create_release(title=title, desc=desc, tag=ref, with_commit=True)
         # repo.tag(tag=ref)
         st.success(f"Success Versioning Dataset on {ref}")
 
         # push dvc to remotes storage
-        depece.push(repo_dir=repo.repo_dir)
+        dvc.push()
         st.success(f"Success Push to Remotes Storage")
