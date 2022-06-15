@@ -123,8 +123,21 @@ class Repository:
 
         return response.json()['id']
 
-    def create_release(self, title: str, desc: str, tag: str):
+    def create_release(self, title: str, desc: str, tag: str, with_commit: bool = False):
         """ create release assets from tag (target) """
+
+        if with_commit:
+            repo = git.Repo(self.repo_dir)
+
+            # commit all files
+            try: 
+                repo.git.add(all=True)
+                repo.git.commit('-m', f'Version {tag}')
+                repo.remotes.origin.push()
+            except Exception as e:
+                print(e)
+                sys.exit(1)
+
         release_dict = {
             "tag_name": tag,
             "target_commitish": self.ref,
@@ -173,10 +186,14 @@ class Repository:
 if __name__ == '__main__':
 
     repository = Repository(
-        repo_url='https://github.com/ruhyadi/sample-release',
+        repo_url='https://github.com/ruhyadi/sample-dataset-registry',
         ref='main',
-        token='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'
+        token='ghp_dKM1r4cfc1HWM7g97scGSatlgZWH0S3nfsZ'
     )
+
+    repository.clone(force=True)
+
+    repository.list_tags()
 
     # repository.init(is_private=True)
     # repository.clone(force=True)

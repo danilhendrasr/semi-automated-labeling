@@ -51,14 +51,22 @@ def remote(repo_dir: str, endpoint: str, remotes: str, remote_name: str = None):
     print(f"[INFO] Success add {remotes} remote storage")
 
 
-def push(repo_dir: Str):
+def push(repo_dir: str):
     """push data to remotes"""
 
     os.chdir(repo_dir)
     os.system("dvc push")
 
-    print(f"[INFO] Success push")
+    print(f"[INFO] Success push dataset")
 
+
+def pull(repo_dir: str):
+    """pull dataset from remotes storage"""
+
+    os.chdir(repo_dir)
+    os.system('dvc pull')
+
+    print(f'[INFO] Success pull dataset')
 
 if __name__ == "__main__":
 
