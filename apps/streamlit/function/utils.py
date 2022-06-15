@@ -10,6 +10,10 @@ from yaml.loader import SafeLoader
 import torch
 import torchvision
 
+from glob import glob
+from tqdm import tqdm
+import shutil
+
 
 def parse_coco(json_file):
     """Parse COCO annotations from xywh to xyxy annotations format"""
@@ -71,6 +75,26 @@ def change_model_tag(repo_dir: str, repo_url: str, tag: str):
     # save new yaml
     with open(yaml_path, "w") as f:
         yaml.dump(function_yaml, f)
+
+
+def merge_yolo(src, dst):
+    src_train_folder = os.path.join(src, "obj_train_data")
+    dst_train_folder = os.path.join(dst, "obj_train_data")
+    src_train_files = glob(os.path.join(src_train_folder, "*"))
+
+    print("[INFO] Merging Data")
+    for file in tqdm(src_train_files):
+        shutil.copy2(file, dst_train_folder)
+
+    dst_train_files = sorted(glob(os.path.join(dst_train_folder, "*.jpg")))
+    with open(os.path.join(dst, "train.txt"), "w") as f:
+        for file in dst_train_files:
+            f.write(f"{'/'.join(file.split('/')[-2:])}\n")
+
+    # delete old dataset (src dataset)
+    shutil.rmtree(os.path.join(src))
+
+    print("[INFO] Success Merging Data")
 
 
 if __name__ == "__main__":

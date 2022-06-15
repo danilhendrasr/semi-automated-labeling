@@ -6,6 +6,7 @@ import streamlit as st
 from function.repository import Repository
 from function.dvc import DVC
 from function import cvat
+from function.utils import merge_yolo
 
 
 def dataset_versioning(
@@ -71,7 +72,7 @@ def dataset_versioning(
     except:
         release_tags = []
 
-    if is_merging == "True":
+    if is_merging == "True" and annot_type == "YOLO 1.1":
         with col1[3]:
             merge_ref = st.selectbox(label="Merging Dataset", options=release_tags)
 
@@ -97,11 +98,12 @@ def dataset_versioning(
 
     if btn:
         # init repository
-        if is_merging == "True":
+        if is_merging == "True" and annot_type == "YOLO 1.1":
             repo = Repository(repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir)
         else:
             # default to main branch
             repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
+
         # init dataset
         dataset = cvat.CVAT(
             username=username,
@@ -118,17 +120,39 @@ def dataset_versioning(
         dvc = DVC(path=repo.repo_dir)
 
         # dump dataset
-        dataset.tasks_dump(task_id=task_id, fileformat=annot_type, extract=True, remove_zip=True)
-        st.success(f"[INFO] Download Dataset Task {task_id}")
+        if is_merging == "True" and annot_type == "YOLO 1.1":
+            dataset.tasks_dump(
+                task_id=task_id,
+                fileformat=annot_type,
+                filename="new_dataset.zip",
+                extract=True,
+                remove_zip=True,
+            )
+        else:
+            dataset.tasks_dump(
+                task_id=task_id, 
+                fileformat=annot_type, 
+                extract=True, 
+                remove_zip=True
+            )
+        st.success(f"Download Dataset Task {task_id}")
+
         # pull dataset for merging
-        if is_merging == "True":
-            dvc.pull() 
+        if is_merging == "True" and annot_type == "YOLO 1.1":
+            dvc.pull()
+            # merge dataset
+            merge_yolo(
+                src=os.path.join(repo.repo_dir, 'new_dataset'), 
+                dst=os.path.join(repo.repo_dir, 'dataset')
+            )
+            st.success(f'Success Merging {merge_ref} to {ref}')
+
         # add dataset to dvc
-        dvc.add(item='dataset')
+        dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
+
         # # tag version dataset
         repo.create_release(title=title, desc=desc, tag=ref, with_commit=True)
-        # repo.tag(tag=ref)
         st.success(f"Success Versioning Dataset on {ref}")
 
         # push dvc to remotes storage
