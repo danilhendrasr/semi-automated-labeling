@@ -45,7 +45,7 @@ def remote(repo_dir: str, endpoint: str, remotes: str, remote_name: str = None):
 
     os.chdir(repo_dir)
     if remotes == "gdrive":
-        os.system(f"dvc remote add --default {remote_name} gdrive://{endpoint}")
+        os.system(f"dvc remote add -d {remote_name} gdrive://{endpoint}")
     # TODO: add more remotes storages
 
     print(f"[INFO] Success add {remotes} remote storage")

@@ -7,6 +7,7 @@ from function.repository import Repository
 import function.dvc_functions as depece
 from function import cvat
 
+
 def dataset_versioning(
     page_key: str = "dataset_versioning", dump_dir: str = os.getcwd()
 ):
@@ -76,20 +77,21 @@ def dataset_versioning(
         with col1[3]:
             merge_ref = st.selectbox(label="Merging Dataset", options=release_tags)
 
-    col2 = st.columns([1, 2])
-    with col2[0]:
-        remote_type = st.selectbox(
-            label="Remote Storage",
-            options=["gdrive", "azure"],
-            key=f"{page_key}_versioning",
-        )
-    with col2[1]:
-        endpoint = st.text_input(
-            label="Endpoint",
-            value="xxx",
-            type="password",
-            key=f"{page_key}_versioning",
-        )
+    # INFO: Remote Storage and Endpoint (DEPRICATED)
+    # col2 = st.columns([1, 2])
+    # with col2[0]:
+    #     remote_type = st.selectbox(
+    #         label="Remote Storage",
+    #         options=["gdrive", "azure"],
+    #         key=f"{page_key}_versioning",
+    #     )
+    # with col2[1]:
+    #     endpoint = st.text_input(
+    #         label="Endpoint",
+    #         value="xxx",
+    #         type="password",
+    #         key=f"{page_key}_versioning",
+    #     )
 
     btn = st.button(label="Versioning Dataset", key=f"{page_key}_versioning")
 
@@ -101,33 +103,37 @@ def dataset_versioning(
             host="http://192.168.103.67:8080",
             dump_dir=repo.repo_dir,
         )
+
         # clone repo
         repo.clone(force=True)
         st.success(f'Success Dataset Repository {"/".join(url.split("/")[3:5])}')
+
         # dump dataset
         dataset.tasks_dump(
-            task_id=task_id,
-            fileformat=annot_type,
-            filename=f"{task_id}.zip",
-            extract=True,
+            task_id=task_id, fileformat=annot_type, extract=True, remove_zip=True
         )
         st.success(f"[INFO] Download Dataset Task {task_id}")
-        # init dvc
+
+        # CAUTION: dvc init (DEPRICATED)
         depece.init(repo_dir=repo.repo_dir, force=True)
         st.success(f"Success Init DVC")
+
         # add dataset to dvc
         depece.add(repo_dir=repo.repo_dir)
         st.success(f"Success Add Dataset to DVC")
-        # add remotes
-        depece.remote(
-            repo_dir=repo.repo_dir,
-            endpoint=endpoint,
-            remotes=remote_type,
-        )
-        st.success(f"Success Add Remotes Storage")
+
+        # CAUTION: add remotes (DEPRICATED)
+        # depece.remote(
+        #     repo_dir=repo.repo_dir,
+        #     endpoint="1PSuz_MQr61Zh1R2PzfnVjEecRWGkrvpV",
+        #     remotes='gdrive',
+        # )
+        # st.success(f"Success Add Remotes Storage")
+
         # tag version dataset
         repo.tag(tag=ref)
         st.success(f"Success Versioning Dataset on {ref}")
+
         # push dvc to remotes storage
-        depece.push()
+        depece.push(repo_dir=repo.repo_dir)
         st.success(f"Success Push to Remotes Storage")
