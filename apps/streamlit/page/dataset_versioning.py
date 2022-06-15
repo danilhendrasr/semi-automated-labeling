@@ -43,7 +43,7 @@ def dataset_versioning(
         token = st.text_input(
             label="Personal Access Token",
             # value="xxx",
-            value="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",
+            value="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",
             key=f"{page_key}_versioning",
             type="password",
         )
@@ -146,14 +146,14 @@ def dataset_versioning(
             depece.pull(repo_dir=repo.repo_dir)
 
         # CAUTION: dvc init (DEPRICATED)
-        depece.init(repo_dir=repo.repo_dir, force=True)
-        st.success(f"Success Init DVC")
+        # depece.init(repo_dir=repo.repo_dir, force=True)
+        # st.success(f"Success Init DVC")
 
         # add dataset to dvc
         depece.add(repo_dir=repo.repo_dir)
         st.success(f"Success Add Dataset to DVC")
 
-        # # CAUTION: add remotes (DEPRICATED)
+        # CAUTION: add remotes (DEPRICATED)
         # depece.remote(
         #     repo_dir=repo.repo_dir,
         #     endpoint="1PSuz_MQr61Zh1R2PzfnVjEecRWGkrvpV",
