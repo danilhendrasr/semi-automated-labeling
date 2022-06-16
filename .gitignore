@@ -180,4 +180,7 @@ apps/streamlit/nms-coco
 *.json
 *.zip
 
-/apps/streamlit/dump_versioning
+/apps/streamlit/dump
+
+# ignore md for while
+*.md

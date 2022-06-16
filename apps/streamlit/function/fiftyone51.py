@@ -1,11 +1,16 @@
 """ FiftyOne Functions """
 
+from cProfile import label
 from typing import List
 import fiftyone as fo
+from fiftyone import ViewField as F
+import fiftyone.brain as fob
+import fiftyone.zoo as foz
+
 import os
 import json
-
-from sklearn import datasets
+from glob import glob
+import time
 
 
 def convert_to_coco(dataset_dir):
@@ -21,6 +26,21 @@ def convert_to_coco(dataset_dir):
     os.rename(src_1, dst_1)
 
     print("[INFO] Success convert to Fiftyone COCO Format")
+
+
+def convert_to_yolo(dataset_dir):
+    """Convert from YOLO CVAT format to Fiftyone format"""
+    # rename directory images to data
+    src = os.path.join(dataset_dir, "obj_train_data")
+    dst = os.path.join(dataset_dir, "data")
+    os.rename(src, dst)
+
+    dst_files = sorted(glob(os.path.join(dataset_dir, "data", "*.jpg")))
+    with open(os.path.join(dataset_dir, "images.txt"), "w") as f:
+        for file in dst_files:
+            f.write(f"{'/'.join(file.split('/')[-2:])}\n")
+
+    print("[INFO] Success convert to Fiftyone YOLO Format")
 
 
 def preview_fiftyone(
@@ -51,16 +71,14 @@ def preview_fiftyone(
         # view mode patches ground truth/predictions
         gt_patches = dataset.to_patches("ground_truth")
         session.view = gt_patches
-
         return dataset, gt_patches
     else:
         session.view = None
-
         return dataset
 
 
 def save_tags_patches(patches, dataset_dir: str):
-    """ Save fiftyone tags to COCO json dataset format """
+    """Save fiftyone tags to COCO json dataset format"""
 
     # iterates tags in dataset
     tags = []
@@ -167,3 +185,129 @@ def filter_tags(dataset, label_tags):
                     idx.append(i)
                     found = True
     return idx
+
+
+class GenerateReport:
+    """Generate Report with FiftyOne"""
+
+    def __init__(self, repo_dir: str, annotations_type: str, save_dir: str):
+
+        assert annotations_type in ["YOLO 1.1"], "Annotations does not support"
+
+        self.dataset_dir = os.path.join(repo_dir, "dataset")
+        self.save_dir = save_dir
+
+        if annotations_type == "YOLO 1.1":
+            try:
+                convert_to_yolo(dataset_dir=self.dataset_dir)
+            except:
+                print("[INFO] Dataset already in FiftyOne YOLO Format")
+
+        self.dataset = fo.Dataset.from_dir(
+            dataset_dir=self.dataset_dir,
+            dataset_type=fo.types.YOLOv4Dataset,
+        )
+        # compute metadata
+        self.dataset.compute_metadata()
+
+    def categorical_histogram(self):
+
+        hist = fo.CategoricalHistogram()
+
+    def preview_fiftyone(
+        self, delete_existing: bool = True, is_patches: bool = False, port: int = 5151
+    ):
+        """DEPRICATED SOON"""
+        """Preview dataset to FiftyOne Apps"""
+        if delete_existing:
+            list_datasets = fo.list_datasets()
+            try:
+                [fo.delete_dataset(name) for name in list_datasets]
+            except:
+                pass
+
+        self.dataset = fo.Dataset.from_dir(
+            dataset_dir=self.dataset_dir,
+            dataset_type=fo.types.YOLOv4Dataset,
+        )
+        self.dataset.compute_metadata()
+
+        session = fo.launch_app(self.dataset, address="0.0.0.0", port=port)
+        if is_patches:
+            # view mode patches ground truth/predictions
+            gt_patches = self.dataset.to_patches("ground_truth")
+            session.view = gt_patches
+        else:
+            session.view = None
+
+        time.sleep(1000)
+
+    def compute_imagebytes(self, save_img: bool = True):
+        """plot image size in KB"""
+        plot = fo.NumericalHistogram(
+            F("metadata.size_bytes") / 1024,
+            bins=50,
+            xlabel="image size (KB)",
+            init_view=self.dataset,
+        )
+        if save_img:
+            plot.save(self.save_dir, scale=2.0)
+
+    def plot_imagebytes(self, save_img: bool = True):
+        """plot image size in KB"""
+        plot = fo.NumericalHistogram(
+            F("metadata.size_bytes") / 1024,
+            bins=50,
+            xlabel="image size (KB)",
+            init_view=self.dataset,
+        )
+        if save_img:
+            plot.save(f"{self.save_dir}/hist_imagebytes.svg", scale=2.0)
+
+    def plot_gtlabel(self, save_img: bool = True):
+        """plot object gt label"""
+        plot = fo.CategoricalHistogram(
+            "ground_truth.detections.label",
+            order="frequency",
+            xlabel="ground truth label",
+            init_view=self.dataset,
+        )
+        if save_img:
+            plot.save(f"{self.save_dir}/hist_gtlabel.svg", scale=2.0)
+
+    def plot_uniqueness(self, save_img: bool = True):
+        """plot image uniqueness"""
+        fob.compute_uniqueness(self.dataset)
+        results = fob.compute_visualization(self.dataset)
+        plot = results.visualize(
+            labels="uniqueness",
+            axis_equal=True,
+        )
+        if save_img:
+            plot.save(f"{self.save_dir}/uniqueness.svg", scale=2.0)
+
+    def plot_embeddings_object(self, save_img: bool = True):
+        """plot object (bounding-box) embeddings"""
+        results = fob.compute_visualization(self.dataset, patches_field="ground_truth")
+        bbox_area = F("bounding_box")[2] * F("bounding_box")[3]
+        plot = results.visualize(
+            labels=F("ground_truth.detections.label"),
+            sizes=F("ground_truth.detections[]").apply(bbox_area),
+        )
+        if save_img:
+            plot.save(f"{self.save_dir}/embedding.svg", scale=2.0)
+
+
+if __name__ == "__main__":
+
+    # test generate report
+    report = GenerateReport(
+        repo_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump/ruhyadi/sample-dataset-registry",
+        annotations_type="YOLO 1.1",
+        save_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump",
+    )
+    report.plot_imagebytes()
+    report.plot_gtlabel()
+    report.plot_uniqueness()
+    report.plot_embeddings_object()
+    # report.preview_fiftyone(is_patches=True, port=5152)

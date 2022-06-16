@@ -89,7 +89,7 @@ def merge_yolo(src, dst):
     dst_train_files = sorted(glob(os.path.join(dst_train_folder, "*.jpg")))
     with open(os.path.join(dst, "train.txt"), "w") as f:
         for file in dst_train_files:
-            f.write(f"{'/'.join(file.split('/')[-2:])}\n")
+            f.write(f"{'/'.join(file.split('/')[-3:])}\n")
 
     # delete old dataset (src dataset)
     shutil.rmtree(os.path.join(src))
