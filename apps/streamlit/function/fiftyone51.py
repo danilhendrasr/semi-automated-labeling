@@ -40,6 +40,8 @@ def convert_to_yolo(dataset_dir):
         for file in dst_files:
             f.write(f"{'/'.join(file.split('/')[-2:])}\n")
 
+    os.remove(dataset_dir, "train.txt")
+
     print("[INFO] Success convert to Fiftyone YOLO Format")
 
 
@@ -210,10 +212,6 @@ class GenerateReport:
         # compute metadata
         self.dataset.compute_metadata()
 
-    def categorical_histogram(self):
-
-        hist = fo.CategoricalHistogram()
-
     def preview_fiftyone(
         self, delete_existing: bool = True, is_patches: bool = False, port: int = 5151
     ):
@@ -241,18 +239,7 @@ class GenerateReport:
             session.view = None
 
         time.sleep(1000)
-
-    def compute_imagebytes(self, save_img: bool = True):
-        """plot image size in KB"""
-        plot = fo.NumericalHistogram(
-            F("metadata.size_bytes") / 1024,
-            bins=50,
-            xlabel="image size (KB)",
-            init_view=self.dataset,
-        )
-        if save_img:
-            plot.save(self.save_dir, scale=2.0)
-
+        
     def plot_imagebytes(self, save_img: bool = True):
         """plot image size in KB"""
         plot = fo.NumericalHistogram(
@@ -306,8 +293,8 @@ if __name__ == "__main__":
         annotations_type="YOLO 1.1",
         save_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump",
     )
-    report.plot_imagebytes()
-    report.plot_gtlabel()
-    report.plot_uniqueness()
+    # report.plot_imagebytes()
+    # report.plot_gtlabel()
+    # report.plot_uniqueness()
     report.plot_embeddings_object()
     # report.preview_fiftyone(is_patches=True, port=5152)
