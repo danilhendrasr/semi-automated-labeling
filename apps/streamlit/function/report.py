@@ -1,5 +1,7 @@
 """ Generate Dataset Report """
 
+from glob import glob
+import shutil
 from typing import TypedDict
 from mdutils.mdutils import MdUtils
 import os
@@ -34,7 +36,17 @@ class Report:
         self.dump_dir = dump_dir
         self.opt_description = opt_description
 
-        self.md = MdUtils(file_name=self.filename, title=self.title)
+        # create directory
+        assets_dir = os.path.join(self.repo_dir, 'assets')
+        if not os.path.isdir(assets_dir):
+            os.makedirs(os.path.join(assets_dir, 'dist'))   # for plot
+            os.makedirs(os.path.join(assets_dir, 'images')) # for images example
+        else:
+            shutil.rmtree(assets_dir)
+            os.makedirs(os.path.join(assets_dir, 'dist'))   # for plot
+            os.makedirs(os.path.join(assets_dir, 'images')) # for images example
+
+        self.md = MdUtils(file_name=self.filename, title="Dataset Report")
 
     def description(self):
         """Generap purpose section"""
@@ -66,7 +78,8 @@ class Report:
         self.md.new_paragraph(f"```\n{tree}\n```")
 
     def dataset_distribution(self):
-        assets = [f"./assets/{asset}" for asset in os.listdir(os.path.join(self.repo_dir, "assets"))]
+        """Plot dataset distribution"""
+        assets = [f"./assets/dist/{asset}" for asset in os.listdir(os.path.join(self.repo_dir, "assets/dist"))]
         self.md.new_header(level=2, title="Dataset Distribution")
         table = ["", ""]  # two columns
         for i in range(0, len(assets), 2):
@@ -77,9 +90,25 @@ class Report:
                             self.md.new_inline_image(assets[i + 1].split("/")[-1], assets[i + 1])])
         self.md.new_table(columns=2, rows=math.ceil(len(assets) / 2) + 1, text=table, text_align="center")
 
+    def dataset_example(self):
+        """Plot dataset example"""
+        # list images and labels from dataset
+        assets_path = os.path.join(self.repo_dir, 'assets', 'images')
+        images = glob(os.path.join(self.repo_dir, 'dataset', 'data', '*.jpg'))[:4]
+        [shutil.copy2(images[i], assets_path) for i in range(len(images))]
+        # list new images and labels from dataset
+        assets = sorted([f"./assets/images/{asset}" for asset in os.listdir(assets_path)])
+        self.md.new_header(level=2, title="Dataset Example")
+        print(assets)
+        table = ["", ""]  # two columns
+        for i in range(0, len(assets), 2):
+            table.extend([self.md.new_inline_image(assets[i].split("/")[-1], assets[i]),
+                        self.md.new_inline_image(assets[i + 1].split("/")[-1], assets[i + 1])])
+        self.md.new_table(columns=2, rows=math.ceil(len(assets) / 2) + 1, text=table, text_align="center")
+
     def generate(self):
         """Generate report"""
-        self.md.new_header(level=1, title="Dataset Report")
+        self.md.new_header(level=1, title="")
         self.md.new_line()
         # description
         self.description()
@@ -89,6 +118,8 @@ class Report:
         self.dataset_structure()
         # dataset distribution
         self.dataset_distribution()
+        # dataset example
+        self.dataset_example()
 
         os.chdir(self.dump_dir)
         self.md.create_md_file()
