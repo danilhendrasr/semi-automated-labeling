@@ -31,7 +31,7 @@ def create_FigureWidget(embeddings):
 
     return FigureWidget(data=[trace], layout=layout)
 
-def embedding(dataset, dash_port, session_port, function_key):
+def main(dataset, dash_port, session_port, function_key):
     
     index2id = dict()
     id2index = dict()
@@ -69,3 +69,8 @@ def embedding(dataset, dash_port, session_port, function_key):
     
     session = fo.launch_app(dash_dataset, address='0.0.0.0', port=session_port)
     app.run_server(debug=False, host='0.0.0.0', port=dash_port)
+
+if __name__ == '__main__':
+    import fiftyone.zoo as foz
+    dataset = foz.load_zoo_dataset("quickstart")
+    main(dataset, dash_port=5201, session_port=5202, function_key=__name__)
