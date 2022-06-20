@@ -441,14 +441,21 @@ if __name__ == "__main__":
         username="superadmin",
         password="KECILSEMUA",
         host="http://192.168.103.67:8080",
-        dump_dir="./",
+        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump",
     )
 
-    cvat.tasks_upload(
-        task_id=41,
-        fileformat="COCO 1.0",
-        filename="/home/intern-didir/Repository/labelling/apps/streamlit/41/labels.json",
-    )
+    # cvat.tasks_upload(
+    #     task_id=41,
+    #     fileformat="COCO 1.0",
+    #     filename="/home/intern-didir/Repository/labelling/apps/streamlit/41/labels.json",
+    # )
+
+    cvat.tasks_dump(
+        task_id=39, 
+        fileformat='YOLO 1.1', 
+        filename='sample.zip',
+        extract=True,
+        remove_zip=True)
 
     # tasks_list = cvat.tasks_list()
 

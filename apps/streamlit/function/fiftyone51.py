@@ -1,11 +1,9 @@
 """ FiftyOne Functions """
 
-from cProfile import label
 from typing import List
 import fiftyone as fo
 from fiftyone import ViewField as F
 import fiftyone.brain as fob
-import fiftyone.zoo as foz
 
 import os
 import json
@@ -189,15 +187,16 @@ def filter_tags(dataset, label_tags):
     return idx
 
 
-class GenerateReport:
+class GeneratePlot:
     """Generate Report with FiftyOne"""
-
-    def __init__(self, repo_dir: str, annotations_type: str, save_dir: str):
+    def __init__(self, repo_dir: str, annotations_type: str):
 
         assert annotations_type in ["YOLO 1.1"], "Annotations does not support"
 
         self.dataset_dir = os.path.join(repo_dir, "dataset")
-        self.save_dir = save_dir
+        self.save_dir = os.path.join(repo_dir, 'assets', 'plot')
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)
 
         if annotations_type == "YOLO 1.1":
             try:
@@ -284,17 +283,40 @@ class GenerateReport:
         if save_img:
             plot.save(f"{self.save_dir}/embedding.svg", scale=2.0)
 
+    def generate(self):
+        """Generate Plot"""
+        self.plot_imagebytes()
+        self.plot_gtlabel()
+        self.plot_uniqueness()
+        self.plot_embeddings_object()
+
+    def stats(self):
+        """Return dataset stats"""
+        classes = self.dataset.get_classes('ground_truth')
+        num_classes = len(classes)
+        stats = self.dataset.stats(include_media=True)
+        num_samples = stats['samples_count']
+        total_size = stats['total_size']
+        sample = self.dataset.first()
+        dataset_type = sample.metadata['mime_type']
+
+        return [dataset_type, num_classes, str(classes), num_samples, total_size]
 
 if __name__ == "__main__":
 
     # test generate report
-    report = GenerateReport(
+    report = GeneratePlot(
         repo_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump/ruhyadi/sample-dataset-registry",
-        annotations_type="YOLO 1.1",
-        save_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump",
-    )
+        annotations_type="YOLO 1.1"
+        )
     # report.plot_imagebytes()
     # report.plot_gtlabel()
     # report.plot_uniqueness()
-    report.plot_embeddings_object()
+    # report.plot_embeddings_object()
     # report.preview_fiftyone(is_patches=True, port=5152)
+
+    print(report.dataset.get_classes('ground_truth'))
+    print(report.dataset.summary())
+    print(report.dataset.stats(include_media=True))
+    sample = report.dataset.first()
+    print(sample.metadata['mime_type'])
