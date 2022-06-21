@@ -102,7 +102,8 @@ def dataset_versioning(
     if btn:
         # init repository
         if is_merging == "True" and annot_type == "YOLO 1.1":
-            repo = Repository(repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir)
+            # TODO: fix reference tag
+            repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
         else:
             # default to main branch
             repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
