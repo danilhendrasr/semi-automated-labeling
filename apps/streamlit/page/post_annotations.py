@@ -16,6 +16,8 @@ def post_annotations(dump_dir: str, port: int = 6161):
         st.session_state.patches = None
     if "tags" not in st.session_state:
         st.session_state.tags = None
+    if "cvat_dataset" not in st.session_state:
+        st.session_state.cvat_dataset = None
     if "dataset" not in st.session_state:
         st.session_state.dataset = None
     # assign unique tags
@@ -69,23 +71,26 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
     convert_btn = st.button(label="Convert")
 
+    st.subheader("Send Back to CVAT")
+    send_to_cvat_btn = st.button(label="Send Back to CVAT")
+
     if btn:
         # initiate dataset
-        dataset = cvat.CVAT(
+        st.session_state.cvat_dataset = cvat.CVAT(
             username=username,
             password=password,
             host="http://192.168.103.67:8080",
             dump_dir=dump_dir,
         )
         # download dataset
-        dataset.tasks_dump(
+        st.session_state.cvat_dataset.tasks_dump(
             task_id=task_id,
             fileformat="COCO 1.0",
             filename=f"{task_id}.zip",
             extract=True,
         )
         st.success(f"Download Dataset Task {task_id}")
-        # apply nms
+        # # apply nms
         label_path = os.path.join(dataset_dir, "annotations", "instances_default.json")
         utils.apply_nms(
             label_path=label_path,
@@ -93,7 +98,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             dump_json=True,
         )
         st.success("Apply NMS")
-        # convert to fiftyone COCO
+        # # convert to fiftyone COCO
         fiftyone51.convert_to_coco(dataset_dir=dataset_dir)
         # preview to fiftyone
         st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
@@ -116,6 +121,14 @@ def post_annotations(dump_dir: str, port: int = 6161):
             to_label=to_label,
             list_tags=st.session_state.tags,
             category_id=classes
+        )
+
+    if send_to_cvat_btn:
+        # send back new labels to cvat
+        st.session_state.cvat_dataset.tasks_upload(
+            task_id=task_id,
+            fileformat="COCO 1.0",
+            filename=os.path.join(dataset_dir, "labels_new.json")
         )
 
 if __name__ == "__main__":

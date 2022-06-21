@@ -46,7 +46,7 @@ def apply_nms(
     boxes = torch.tensor([boxes["bbox"] for boxes in annotations])
     scores = torch.tensor(scores)
     # apply nms
-    nms = torchvision.ops.nms(boxes, scores, iou_threshold).tolist()
+    nms = sorted(torchvision.ops.nms(boxes, scores, iou_threshold).tolist())
     # change annotations
     labels["annotations"] = [labels["annotations"][index] for index in nms]
 

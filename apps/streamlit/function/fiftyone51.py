@@ -77,7 +77,7 @@ def preview_fiftyone(
         return dataset
 
 
-def get_tags(patches, dataset_dir: str = None):
+def get_tags(patches):
     """get patches tags"""
     TAGS = []
     for pred in patches:
@@ -91,7 +91,7 @@ def get_tags(patches, dataset_dir: str = None):
 
 def convert_labels(
     dataset_dir: str, from_tag: str, to_label: str, list_tags: List, category_id: List
-    ):
+):
     """Convert COCO labels based on fiftyone tags"""
     # load coco labels
     labels_json = json.load(open(os.path.join(dataset_dir, "labels.json")))
@@ -103,7 +103,7 @@ def convert_labels(
             annotations["category_id"] = label_index
 
     # save coco json
-    with open(os.path.join(dataset_dir, "labels2.json"), "w") as f:
+    with open(os.path.join(dataset_dir, "labels_new.json"), "w") as f:
         f.write(json.dumps(labels_json))
 
 
