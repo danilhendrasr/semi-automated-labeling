@@ -1,5 +1,6 @@
 """ FiftyOne Functions """
 
+import shutil
 from typing import List
 import fiftyone as fo
 from fiftyone import ViewField as F
@@ -333,6 +334,71 @@ class GeneratePlot:
 
         return [dataset_type, num_classes, str(classes), num_samples, total_size]
 
+def fiftyone_format(select: str):
+
+    format = {
+        "COCO 1.0": fo.types.COCODetectionDataset,
+        "YOLO 1.1": fo.types.YOLOv4Dataset,
+        "CVAT 1.1": fo.types.CVATImageDataset
+    }
+
+    return format[select]
+
+def convert_format(dataset_dir: str, format: str):
+    """Convert CVAT to FiftyOne Format"""
+    dataset_type = fiftyone_format(format)
+    # create dump directory
+    dump_dataset = os.path.join(dataset_dir, "dump")
+    os.makedirs(dump_dataset)
+
+    src = os.path.join(dataset_dir, "images")
+    dst = os.path.join(dump_dataset, "data")
+    os.rename(src, dst)
+    src = os.path.join(dataset_dir, "annotations", "instances_default.json")
+    dst = os.path.join(dump_dataset, "labels.json")
+    os.rename(src, dst)
+
+    dataset = fo.Dataset.from_dir(dump_dataset, fo.types.COCODetectionDataset)
+    # export dataset with fiftyone format
+    dataset.export(dataset_dir, dataset_type)
+    # delete old dataset
+    shutil.rmtree(dump_dataset)
+    shutil.rmtree(os.path.join(dataset_dir, "annotations"))
+
+    print("[INFO] Success convert to FiftyOne CVAT Format")
+
+def merging_dataset(format: str, repo_dir: str):
+    """
+    Merging dataset with FiftyOne
+    new dataset path = repo_dir/new_dataset
+    old dataset path = repo_dir/old_dataset
+    """
+    dataset_type = fiftyone_format(format)
+
+    dataset_old = fo.Dataset.from_dir(
+        dataset_dir=os.path.join(repo_dir, "old_dataset"), # fix
+        dataset_type=dataset_type,
+    )
+    dataset_new = fo.Dataset.from_dir(
+        dataset_dir=os.path.join(repo_dir, "new_dataset"), # fix
+        dataset_type=dataset_type,
+    )
+    dataset_old.merge_samples(dataset_new)
+
+    export_dir = os.path.join(repo_dir, "dataset")
+    if not os.path.isdir(export_dir):
+        os.makedirs(export_dir)
+    else:
+        shutil.rmtree(export_dir)
+        os.makedirs(export_dir)
+    # export dataset
+    dataset_old.export(
+        export_dir=export_dir,
+        dataset_type=dataset_type
+    )
+    # remove old and new dataset
+    shutil.rmtree(os.path.join(repo_dir, "old_dataset"))
+    shutil.rmtree(os.path.join(repo_dir, "new_dataset"))
 
 if __name__ == "__main__":
 

@@ -17,6 +17,8 @@ from yaml import dump
 
 log = logging.getLogger(__name__)
 
+from .fiftyone51 import convert_format
+
 
 class CVAT:
     def __init__(self, username: str, password: str, host: str, dump_dir: str):
@@ -252,7 +254,7 @@ class CVAT:
             os.remove(dataset_name)
 
     def tasks_dump(
-        self, task_id, fileformat, filename=None, extract=False, remove_zip=False, **kwargs
+        self, task_id, fileformat="COCO 1.0", filename='dataset.zip', extract=False, remove_zip=False, to_fiftyone=False, **kwargs
     ):
         """Download data & annotations for a task in the specified format
         (e.g. 'YOLO ZIP 1.0')."""
@@ -260,10 +262,9 @@ class CVAT:
         response = self.session.get(url)
         response.raise_for_status()
 
-        if filename is None:
-            filename = 'dataset.zip'
-
         url = self.api.tasks_id_dataset(task_id, filename, fileformat)
+        if to_fiftyone:
+            url = self.api.tasks_id_dataset(task_id, filename, "COCO 1.0")
 
         while True:
             response = self.session.get(url)
@@ -292,6 +293,9 @@ class CVAT:
         
         if remove_zip:
             os.remove(dataset_name)
+
+        if to_fiftyone:
+            convert_format(dataset_dir, format=fileformat)
 
     def tasks_upload(self, task_id, fileformat, filename, **kwargs):
         """Upload annotations for a task in the specified format
