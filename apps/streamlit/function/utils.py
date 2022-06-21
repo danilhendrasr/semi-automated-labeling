@@ -34,26 +34,25 @@ def parse_coco(json_file):
 
 
 def apply_nms(
-    json_file: str,
-    annotations: List,
-    scores: List,
+    label_path: str,
     iou_threshold: float,
     dump_json: bool = True,
 ):
     """Apply NMS to new COCO annotations, return new coco labels"""
 
-    labels = json.load(open(json_file))
+    labels = json.load(open(label_path))
+    annotations, scores = parse_coco(label_path)
     # conver to tensor
     boxes = torch.tensor([boxes["bbox"] for boxes in annotations])
     scores = torch.tensor(scores)
     # apply nms
-    nms = torchvision.ops.nms(boxes, scores, iou_threshold).tolist()
+    nms = sorted(torchvision.ops.nms(boxes, scores, iou_threshold).tolist())
     # change annotations
     labels["annotations"] = [labels["annotations"][index] for index in nms]
 
     if dump_json:
         json_object = json.dumps(labels, indent=4)
-        with open(json_file, "w") as f:
+        with open(label_path, "w") as f:
             f.write(json_object)
 
     return labels
@@ -89,7 +88,7 @@ def merge_yolo(src, dst):
     dst_train_files = sorted(glob(os.path.join(dst_train_folder, "*.jpg")))
     with open(os.path.join(dst, "train.txt"), "w") as f:
         for file in dst_train_files:
-            f.write(f"{'/'.join(file.split('/')[-2:])}\n")
+            f.write(f"{'/'.join(file.split('/')[-3:])}\n")
 
     # delete old dataset (src dataset)
     shutil.rmtree(os.path.join(src))

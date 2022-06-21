@@ -1,12 +1,15 @@
 """ Dataset Versioning """
 
 import os
+from git import Repo
 
 import streamlit as st
 from function.repository import Repository
 from function.dvc import DVC
 from function import cvat
 from function.utils import merge_yolo
+from function.fiftyone51 import GeneratePlot
+from function.report import Report
 
 
 def dataset_versioning(
@@ -99,7 +102,8 @@ def dataset_versioning(
     if btn:
         # init repository
         if is_merging == "True" and annot_type == "YOLO 1.1":
-            repo = Repository(repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir)
+            # TODO: fix reference tag
+            repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
         else:
             # default to main branch
             repo = Repository(repo_url=url, ref="main", token=token, dump_dir=dump_dir)
@@ -119,7 +123,7 @@ def dataset_versioning(
         # init DVC
         dvc = DVC(path=repo.repo_dir)
 
-        # dump dataset
+        # donwload dataset
         if is_merging == "True" and annot_type == "YOLO 1.1":
             dataset.tasks_dump(
                 task_id=task_id,
@@ -151,7 +155,22 @@ def dataset_versioning(
         dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
 
-        # # tag version dataset
+        # create report
+        plot = GeneratePlot(
+            repo_dir=repo.repo_dir, 
+            annotations_type=annot_type
+            )
+        plot.generate()
+        stats = plot.stats()
+        report = Report(
+            repo_dir=repo.repo_dir, 
+            desc=desc, 
+            opt_description=[
+                ref, annot_type, stats[0], stats[1], stats[2], stats[3], stats[4]
+            ])
+        report.generate()
+
+        # versioning dataset
         repo.create_release(title=title, desc=desc, tag=ref, with_commit=True)
         st.success(f"Success Versioning Dataset on {ref}")
 
