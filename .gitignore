@@ -184,3 +184,6 @@ apps/streamlit/nms-coco
 
 # ignore md for while
 *.md
+apps/streamlit/master2.py
+apps/streamlit/page/post_annotations2.py
+apps/streamlit/page/post_annotations3.py

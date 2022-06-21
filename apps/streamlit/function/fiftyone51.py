@@ -76,6 +76,16 @@ def preview_fiftyone(
         session.view = None
         return dataset
 
+def get_tags(patches, dataset_dir: str = None):
+    """ Save patches tags """
+    TAGS = []
+    for pred in patches:
+        try:
+            TAGS.append(pred.ground_truth.tags[0])
+        except:
+            TAGS.append("null")
+    
+    return TAGS
 
 def save_tags_patches(patches, dataset_dir: str):
     """Save fiftyone tags to COCO json dataset format"""
@@ -313,10 +323,10 @@ if __name__ == "__main__":
     # report.plot_gtlabel()
     # report.plot_uniqueness()
     # report.plot_embeddings_object()
-    # report.preview_fiftyone(is_patches=True, port=5152)
+    # report.preview_fiftyone(is_patches=True, port=6161)
 
-    print(report.dataset.get_classes('ground_truth'))
-    print(report.dataset.summary())
-    print(report.dataset.stats(include_media=True))
-    sample = report.dataset.first()
-    print(sample.metadata['mime_type'])
+    # print(report.dataset.get_classes('ground_truth'))
+    # print(report.dataset.summary())
+    # print(report.dataset.stats(include_media=True))
+    # sample = report.dataset.first()
+    # print(sample.metadata['mime_type'])

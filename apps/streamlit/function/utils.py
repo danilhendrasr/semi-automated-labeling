@@ -34,15 +34,14 @@ def parse_coco(json_file):
 
 
 def apply_nms(
-    json_file: str,
-    annotations: List,
-    scores: List,
+    label_path: str,
     iou_threshold: float,
     dump_json: bool = True,
 ):
     """Apply NMS to new COCO annotations, return new coco labels"""
 
-    labels = json.load(open(json_file))
+    labels = json.load(open(label_path))
+    annotations, scores = parse_coco(label_path)
     # conver to tensor
     boxes = torch.tensor([boxes["bbox"] for boxes in annotations])
     scores = torch.tensor(scores)
@@ -53,7 +52,7 @@ def apply_nms(
 
     if dump_json:
         json_object = json.dumps(labels, indent=4)
-        with open(json_file, "w") as f:
+        with open(label_path, "w") as f:
             f.write(json_object)
 
     return labels
