@@ -9,7 +9,6 @@ from function import fiftyone51
 from function import cvat
 from function import utils
 
-
 def post_annotations(dump_dir: str, port: int = 6161):
 
     # state
@@ -59,8 +58,8 @@ def post_annotations(dump_dir: str, port: int = 6161):
     st.subheader("Changes Labels")
     col2 = st.columns([2, 2, 1, 1])
     with col2[0]:
-        from_label = st.selectbox(
-            label="From Label",
+        from_tag = st.selectbox(
+            label="From Tag",
             options=unique_tags
         )
     with col2[1]:
@@ -68,6 +67,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             label="To Label",
             options=classes
         )
+    convert_btn = st.button(label="Convert")
 
     if btn:
         # initiate dataset
@@ -108,8 +108,15 @@ def post_annotations(dump_dir: str, port: int = 6161):
         # save patches tags
         st.session_state.tags = fiftyone51.get_tags(patches=st.session_state.patches)
 
-
-
+    if convert_btn:
+        # convert labels
+        fiftyone51.convert_labels(
+            dataset_dir=dataset_dir,
+            from_tag=from_tag,
+            to_label=to_label,
+            list_tags=st.session_state.tags,
+            category_id=classes
+        )
 
 if __name__ == "__main__":
     post_annotations(

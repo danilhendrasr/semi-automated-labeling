@@ -76,16 +76,36 @@ def preview_fiftyone(
         session.view = None
         return dataset
 
+
 def get_tags(patches, dataset_dir: str = None):
-    """ Save patches tags """
+    """get patches tags"""
     TAGS = []
     for pred in patches:
         try:
             TAGS.append(pred.ground_truth.tags[0])
         except:
             TAGS.append("null")
-    
+
     return TAGS
+
+
+def convert_labels(
+    dataset_dir: str, from_tag: str, to_label: str, list_tags: List, category_id: List
+    ):
+    """Convert COCO labels based on fiftyone tags"""
+    # load coco labels
+    labels_json = json.load(open(os.path.join(dataset_dir, "labels.json")))
+
+    label_index = category_id.index(to_label)
+
+    for i, annotations in enumerate(labels_json["annotations"]):
+        if list_tags[i] == from_tag:
+            annotations["category_id"] = label_index
+
+    # save coco json
+    with open(os.path.join(dataset_dir, "labels2.json"), "w") as f:
+        f.write(json.dumps(labels_json))
+
 
 def save_tags_patches(patches, dataset_dir: str):
     """Save fiftyone tags to COCO json dataset format"""
@@ -199,12 +219,13 @@ def filter_tags(dataset, label_tags):
 
 class GeneratePlot:
     """Generate Report with FiftyOne"""
+
     def __init__(self, repo_dir: str, annotations_type: str):
 
         assert annotations_type in ["YOLO 1.1"], "Annotations does not support"
 
         self.dataset_dir = os.path.join(repo_dir, "dataset")
-        self.save_dir = os.path.join(repo_dir, 'assets', 'plot')
+        self.save_dir = os.path.join(repo_dir, "assets", "plot")
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)
 
@@ -248,7 +269,7 @@ class GeneratePlot:
             session.view = None
 
         time.sleep(1000)
-        
+
     def plot_imagebytes(self, save_img: bool = True):
         """plot image size in KB"""
         plot = fo.NumericalHistogram(
@@ -302,23 +323,24 @@ class GeneratePlot:
 
     def stats(self):
         """Return dataset stats"""
-        classes = self.dataset.get_classes('ground_truth')
+        classes = self.dataset.get_classes("ground_truth")
         num_classes = len(classes)
         stats = self.dataset.stats(include_media=True)
-        num_samples = stats['samples_count']
-        total_size = stats['total_size']
+        num_samples = stats["samples_count"]
+        total_size = stats["total_size"]
         sample = self.dataset.first()
-        dataset_type = sample.metadata['mime_type']
+        dataset_type = sample.metadata["mime_type"]
 
         return [dataset_type, num_classes, str(classes), num_samples, total_size]
+
 
 if __name__ == "__main__":
 
     # test generate report
     report = GeneratePlot(
         repo_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump/ruhyadi/sample-dataset-registry",
-        annotations_type="YOLO 1.1"
-        )
+        annotations_type="YOLO 1.1",
+    )
     # report.plot_imagebytes()
     # report.plot_gtlabel()
     # report.plot_uniqueness()
