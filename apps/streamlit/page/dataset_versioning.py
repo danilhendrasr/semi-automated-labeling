@@ -8,9 +8,7 @@ from function import fiftyone51
 from function.repository import Repository
 from function.dvc import DVC
 from function import cvat
-from function.utils import merge_yolo
-from function.fiftyone51 import GeneratePlot
-from function.report import Report
+from function.report import GenerateReport
 
 
 def dataset_versioning(
@@ -76,7 +74,7 @@ def dataset_versioning(
     except:
         release_tags = []
 
-    if is_merging == "True" and annot_type == "YOLO 1.1":
+    if is_merging == "True":
         with col1[3]:
             merge_ref = st.selectbox(label="Merging Dataset", options=release_tags)
 
@@ -159,15 +157,13 @@ def dataset_versioning(
         st.success(f"Success Add Dataset to DVC")
 
         # create report
-        plot = GeneratePlot(repo_dir=repo.repo_dir, annotations_type=annot_type)
-        plot.generate()
-        stats = plot.stats()
-        report = Report(
-            repo_dir=repo.repo_dir, 
-            desc=desc, 
-            opt_description=[
-                ref, annot_type, stats[0], stats[1], stats[2], stats[3], stats[4]
-            ])
+        report = GenerateReport(
+            repo_dir=repo.repo_dir,
+            format=annot_type,
+            version=ref,
+            desc=desc,
+            filename="README"
+        )
         report.generate()
 
         # versioning dataset

@@ -217,123 +217,6 @@ def filter_tags(dataset, label_tags):
                     found = True
     return idx
 
-
-class GeneratePlot:
-    """Generate Report with FiftyOne"""
-
-    def __init__(self, repo_dir: str, annotations_type: str):
-
-        assert annotations_type in ["YOLO 1.1"], "Annotations does not support"
-
-        self.dataset_dir = os.path.join(repo_dir, "dataset")
-        self.save_dir = os.path.join(repo_dir, "assets", "plot")
-        if not os.path.isdir(self.save_dir):
-            os.makedirs(self.save_dir)
-
-        if annotations_type == "YOLO 1.1":
-            try:
-                convert_to_yolo(dataset_dir=self.dataset_dir)
-            except:
-                print("[INFO] Dataset already in FiftyOne YOLO Format")
-
-        self.dataset = fo.Dataset.from_dir(
-            dataset_dir=self.dataset_dir,
-            dataset_type=fo.types.YOLOv4Dataset,
-        )
-        # compute metadata
-        self.dataset.compute_metadata()
-
-    def preview_fiftyone(
-        self, delete_existing: bool = True, is_patches: bool = False, port: int = 5151
-    ):
-        """DEPRICATED SOON"""
-        """Preview dataset to FiftyOne Apps"""
-        if delete_existing:
-            list_datasets = fo.list_datasets()
-            try:
-                [fo.delete_dataset(name) for name in list_datasets]
-            except:
-                pass
-
-        self.dataset = fo.Dataset.from_dir(
-            dataset_dir=self.dataset_dir,
-            dataset_type=fo.types.YOLOv4Dataset,
-        )
-        self.dataset.compute_metadata()
-
-        session = fo.launch_app(self.dataset, address="0.0.0.0", port=port)
-        if is_patches:
-            # view mode patches ground truth/predictions
-            gt_patches = self.dataset.to_patches("ground_truth")
-            session.view = gt_patches
-        else:
-            session.view = None
-
-        time.sleep(1000)
-
-    def plot_imagebytes(self, save_img: bool = True):
-        """plot image size in KB"""
-        plot = fo.NumericalHistogram(
-            F("metadata.size_bytes") / 1024,
-            bins=50,
-            xlabel="image size (KB)",
-            init_view=self.dataset,
-        )
-        if save_img:
-            plot.save(f"{self.save_dir}/hist_imagebytes.svg", scale=2.0)
-
-    def plot_gtlabel(self, save_img: bool = True):
-        """plot object gt label"""
-        plot = fo.CategoricalHistogram(
-            "ground_truth.detections.label",
-            order="frequency",
-            xlabel="ground truth label",
-            init_view=self.dataset,
-        )
-        if save_img:
-            plot.save(f"{self.save_dir}/hist_gtlabel.svg", scale=2.0)
-
-    def plot_uniqueness(self, save_img: bool = True):
-        """plot image uniqueness"""
-        fob.compute_uniqueness(self.dataset)
-        results = fob.compute_visualization(self.dataset)
-        plot = results.visualize(
-            labels="uniqueness",
-            axis_equal=True,
-        )
-        if save_img:
-            plot.save(f"{self.save_dir}/uniqueness.svg", scale=2.0)
-
-    def plot_embeddings_object(self, save_img: bool = True):
-        """plot object (bounding-box) embeddings"""
-        results = fob.compute_visualization(self.dataset, patches_field="ground_truth")
-        bbox_area = F("bounding_box")[2] * F("bounding_box")[3]
-        plot = results.visualize(
-            labels=F("ground_truth.detections.label"),
-            sizes=F("ground_truth.detections[]").apply(bbox_area),
-        )
-        if save_img:
-            plot.save(f"{self.save_dir}/embedding.svg", scale=2.0)
-
-    def generate(self):
-        """Generate Plot"""
-        self.plot_imagebytes()
-        self.plot_gtlabel()
-        self.plot_uniqueness()
-        self.plot_embeddings_object()
-
-    def stats(self):
-        """Return dataset stats"""
-        classes = self.dataset.get_classes("ground_truth")
-        num_classes = len(classes)
-        stats = self.dataset.stats(include_media=True)
-        num_samples = stats["samples_count"]
-        total_size = stats["total_size"]
-        sample = self.dataset.first()
-        dataset_type = sample.metadata["mime_type"]
-
-        return [dataset_type, num_classes, str(classes), num_samples, total_size]
-
 def fiftyone_format(select: str):
 
     format = {
@@ -401,12 +284,8 @@ def merging_dataset(format: str, repo_dir: str):
     shutil.rmtree(os.path.join(repo_dir, "new_dataset"))
 
 if __name__ == "__main__":
+    pass
 
-    # test generate report
-    report = GeneratePlot(
-        repo_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump/ruhyadi/sample-dataset-registry",
-        annotations_type="YOLO 1.1",
-    )
     # report.plot_imagebytes()
     # report.plot_gtlabel()
     # report.plot_uniqueness()
@@ -417,4 +296,4 @@ if __name__ == "__main__":
     # print(report.dataset.summary())
     # print(report.dataset.stats(include_media=True))
     # sample = report.dataset.first()
-    # print(sample.metadata['mime_type'])
+    # print(sample.metadata['mime_type']
