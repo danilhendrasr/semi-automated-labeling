@@ -154,7 +154,8 @@ def dataset_versioning(
             st.success(f'Success Merging {merge_ref} to {ref}')
 
         # add dataset to dvc
-        dvc.add(item="new_dataset")
+        repo.checkout(ref='main')
+        dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
 
         # create report

@@ -173,7 +173,6 @@ class Repository:
 
         if with_commit:
             repo = git.Repo(self.repo_dir)
-            self.checkout('main')
 
             # commit all files
             try: 
@@ -186,7 +185,7 @@ class Repository:
 
         release_dict = {
             "tag_name": tag,
-            "target_commitish": self.ref,
+            "target_commitish": "main", # self.ref
             "name": title,
             "body": desc,
             "draft": False,
@@ -233,17 +232,19 @@ class Repository:
 if __name__ == '__main__':
 
     repository = Repository(
-        repo_url='https://github.com/ruhyadi/Augmentation-Hydra',
-        ref='main',
-        token='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',
+        repo_url='https://github.com/ruhyadi/dataset-registry-002',
+        ref='v1.2',
+        token='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',
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
 
-    repository.clone(force=True)
+    # repository.clone(force=True)
 
+    repository.checkout('main')
     repository.create_release(
-        title='title', desc='desc', tag='v1.0.1', with_commit=True
+        title='title', desc='desc', tag='v1.2.1', with_commit=True
     )
+
     # repository.checkout()
 
     # repository.list_tags()
