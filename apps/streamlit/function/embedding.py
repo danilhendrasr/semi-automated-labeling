@@ -10,64 +10,100 @@ def compute_embeddings(dataset):
         brain_key="image_embeddings",
         verbose=True,
         seed=51,
+        patches_field="ground_truth"
     ).points
 
 class Dataset:
+
     def create_partial_dataset(self):
         self.partial_dataset = fo.Dataset()
-        for sample in self.dataset:
-            id = self.partial_dataset.add_sample(sample)
-            self.connection_partial_dataset[id] = sample.id
-            self.connection_dataset_partial[sample.id] = id
-        print('Created new partial dataset.')
+        self.update_partial_dataset([i for i in range(self.num_detection)])
 
-    def update_partial_dataset(self, indices=None):
+    def get_sample_indices(self, indices):
+        sample_indices = set()
+        for index in indices:
+            detection_id = self.connection_index_detection[index]
+            sample_id = self.connection_detection_sample[detection_id]
+            sample_indices.add(sample_id)
+        return sample_indices
+
+    def update_partial_dataset(self, indices):
+        sample_indices = self.get_sample_indices(indices)
+        
         self.partial_dataset.clear()
-        self.connection_partial_dataset = dict()
-        self.connection_dataset_partial = dict()
-        if indices is None:
-            for sample in self.dataset:
-                id = self.partial_dataset.add_sample(sample)
-                self.connection_partial_dataset[id] = sample.id
-                self.connection_dataset_partial[sample.id] = id
-        else:
-            for index in indices:
-                dataset_id = self.connection_index_dataset[index]
-                sample = self.dataset[dataset_id]
-                id = self.partial_dataset.add_sample(sample)
-                self.connection_partial_dataset[id] = sample.id
-                self.connection_dataset_partial[sample.id] = id
+        self.connection_sample_partial = dict()
+        self.connection_partial_sample = dict()
+
+        for sample_id in sample_indices:
+            sample = self.dataset[sample_id]
+            partial_id = self.partial_dataset.add_sample(sample)
+            self.connection_sample_partial[sample_id] = partial_id
+            self.connection_partial_sample[partial_id] = sample_id
+
         print('Updated partial dataset.')
 
-    def sync(self):
-        for sample in self.partial_dataset:
-            partial_id = sample.id
-            dataset_id = self.connection_partial_dataset[partial_id]
-            index_id = self.connection_dataset_index[dataset_id]
+    def overwrite_partial_sample(self, partial_id, sample_id):
+        partial = self.partial_dataset[partial_id]
+        sample = self.dataset[sample_id]
+        
+        sample_detection_ids = [sample_detection.id for sample_detection in sample.ground_truth.detections]
+        indices = [self.connection_detection_index[sample_detection_id] for sample_detection_id in sample_detection_ids]
 
-            self.dataset.delete_samples(dataset_id)
-            del self.connection_partial_dataset[partial_id]
-            del self.connection_dataset_partial[dataset_id]
-            del self.connection_index_dataset[index_id]
-            del self.connection_dataset_index[dataset_id]
-            
-            dataset_id = self.dataset.add_sample(sample)
-            self.connection_partial_dataset[partial_id] = dataset_id
-            self.connection_dataset_partial[dataset_id] = partial_id
-            self.connection_index_dataset[index_id] = dataset_id
-            self.connection_dataset_index[dataset_id] = index_id
+        assert len(sample_detection_ids) == len(set(sample_detection_ids)), f"{sample} {sample_detection_ids}"
+
+        for sample_detection_id in sample_detection_ids:
+            del self.connection_detection_index[sample_detection_id]
+        
+        del self.connection_sample_detection[sample_id]
+        for sample_detection_id in sample_detection_ids:
+            del self.connection_detection_sample[sample_detection_id]
+        
+        self.dataset.delete_samples(sample_id)
+        sample_id = self.dataset.add_sample(partial)
+        sample = self.dataset[sample_id]
+
+        sample_detection_ids = [sample_detection.id for sample_detection in sample.ground_truth.detections]
+
+        for index, sample_detection_id in zip(indices, sample_detection_ids):
+            self.connection_detection_index[sample_detection_id] = index
+            self.connection_index_detection[index] = sample_detection_id
+        
+        for pos, sample_detection_id in enumerate(sample_detection_ids):
+            if not pos: self.connection_sample_detection[sample_id] = set()
+            self.connection_sample_detection[sample_id].add(sample_detection_id)
+            self.connection_detection_sample[sample_detection_id] = sample_id
+        
+    def sync(self):
+        for partial in self.partial_dataset:
+            partial_id = partial.id            
+            sample_id = self.connection_partial_sample[partial_id]
+            self.overwrite_partial_sample(partial_id, sample_id)
 
         print('Synced dataset.')
 
     def create_connection(self):
-        self.connection_index_dataset = dict()
-        self.connection_dataset_index = dict()
-        self.connection_dataset_partial = dict()
-        self.connection_partial_dataset = dict()
+        self.connection_index_detection = dict()
+        self.connection_detection_index = dict()
 
-        for i, sample in enumerate(self.dataset):
-            self.connection_index_dataset[i] = sample.id
-            self.connection_dataset_index[sample.id] = i
+        self.connection_detection_sample = dict()
+        self.connection_sample_detection = dict()
+
+        self.connection_sample_partial = dict()
+        self.connection_partial_sample = dict()
+
+        index = 0
+        for sample in self.dataset:
+            for pos, detection in enumerate(sample.ground_truth.detections):
+                self.connection_index_detection[index] = detection.id
+                self.connection_detection_index[detection.id] = index
+
+                if not pos: self.connection_sample_detection[sample.id] = set()
+                self.connection_sample_detection[sample.id].add(detection.id)
+                self.connection_detection_sample[detection.id] = sample.id
+
+                index += 1
+        
+        self.num_detection = index
 
     def __init__(self, dataset):
         self.dataset = dataset
@@ -120,7 +156,7 @@ class Graph:
     def get_app(self):
         return self.app
 
-def main(dataset, dash_port, session_port):
+def main(dataset, dash_port, session_port, key):
     embeddings = compute_embeddings(dataset)
     dataset = Dataset(dataset)
     graph = Graph(embeddings)
@@ -143,8 +179,3 @@ def main(dataset, dash_port, session_port):
     dataset.sync()
     dataset = dataset.dataset
     return dataset
-
-if __name__ == '__main__':
-    import fiftyone.zoo as foz
-    dataset = foz.load_zoo_dataset("quickstart")
-    main(dataset, dash_port=5201, session_port=5202)
