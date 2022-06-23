@@ -9,6 +9,7 @@ from function import fiftyone51
 from function import cvat
 from function import utils
 
+
 def post_annotations(dump_dir: str, port: int = 6161):
 
     # state
@@ -75,13 +76,14 @@ def post_annotations(dump_dir: str, port: int = 6161):
     send_to_cvat_btn = st.button(label="Send Back to CVAT")
 
     if btn:
-        # initiate dataset
-        st.session_state.cvat_dataset = cvat.CVAT(
-            username=username,
-            password=password,
-            host="http://192.168.103.67:8080",
-            dump_dir=dump_dir,
-        )
+        if 'cvat_dataset' not in st.session_state:
+            # initiate dataset
+            st.session_state.cvat_dataset = cvat.CVAT(
+                username=username,
+                password=password,
+                host="http://192.168.103.67:8080",
+                dump_dir=dump_dir,
+            )
         # download dataset
         st.session_state.cvat_dataset.tasks_dump(
             task_id=task_id,
@@ -91,7 +93,8 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
         st.success(f"Download Dataset Task {task_id}")
         # # apply nms
-        label_path = os.path.join(dataset_dir, "annotations", "instances_default.json")
+        label_path = os.path.join(
+            dataset_dir, "annotations", "instances_default.json")
         utils.apply_nms(
             label_path=label_path,
             iou_threshold=float(iou_thres),
@@ -108,10 +111,11 @@ def post_annotations(dump_dir: str, port: int = 6161):
             port=port,
         )
         st.success("Preview to FiftyOne")
-    
+
     if save_tags_btn:
         # save patches tags
-        st.session_state.tags = fiftyone51.get_tags(patches=st.session_state.patches)
+        st.session_state.tags = fiftyone51.get_tags(
+            patches=st.session_state.patches)
 
     if convert_btn:
         # convert labels
@@ -130,6 +134,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             fileformat="COCO 1.0",
             filename=os.path.join(dataset_dir, "labels_new.json")
         )
+
 
 if __name__ == "__main__":
     post_annotations(

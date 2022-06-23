@@ -4,8 +4,10 @@ import streamlit as st
 import section
 
 from function.repository import Repository
+from function.cvat import CVAT
 
 
+# TODO: Handle cannot create dataset repo
 def dataset_upload(page_key: int):
     """ Code for dataset upload page """
 
@@ -42,13 +44,28 @@ def dataset_upload(page_key: int):
                 file.close()
 
                 with zipfile.ZipFile(f'{data_dir}/data.zip') as zip_obj:
+                    # Handle if there are non-image files in the zip
                     zip_obj.extractall(path=data_dir)
                     os.remove(f"{data_dir}/data.zip")
 
-                    repo.commit(git_items=[".gitignore", "dataset.dvc"],
-                                dvc_items=["dataset"],
-                                message="initial dataset version")
-                    repo.tag(tag, False)
-                    repo.push()
+                    # repo.commit(git_items=[".gitignore", "dataset.dvc"],
+                    #             dvc_items=["dataset"],
+                    #             message="initial dataset version")
+                    # repo.tag(tag, False)
+                    # repo.push()
+
+                    if 'cvat_dataset' not in st.session_state:
+                        st.session_state.cvat_dataset = CVAT(username="superadmin", password="KECILSEMUA",
+                                                             host="http://192.168.103.67:8080/", dump_dir="/workspaces/semi-automated-labeling/dump")
+
+                    print(st.session_state.cvat_dataset.tasks_list())
+                    st.session_state.cvat_dataset.tasks_create(name="Heytayo", labels=[{"name": "Tayo"}, {"name": "Oyatt"}], resource_type="local", resources=[
+                                                               "/workspaces/semi-automated-labeling/apps/streamlit/test_dataset/Bengal_197.jpg"])
+                    # st.session_state.cvat_dataset.tasks_upload(
+                    #     task_id=45,
+                    #     fileformat="COCO 1.0",
+                    #     filename=os.path.join(dataset_dir, "labels_new.json")
+                    # )
+
                     st.success(
                         f"Success, dataset repository can be accessed at {repo_url}")
