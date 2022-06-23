@@ -1,7 +1,12 @@
 import fiftyone as fo
 import fiftyone.brain as fob
 import dash
-from plotly.graph_objs import FigureWidget
+import plotly.express as px
+import plotly.graph_objects as go
+import math
+import pandas as pd
+
+import random
 
 def compute_embeddings(dataset):
     return fob.compute_visualization(
@@ -12,6 +17,20 @@ def compute_embeddings(dataset):
         seed=51,
         patches_field="ground_truth"
     ).points
+
+def create_dataframe(dataset):
+    embeddings = compute_embeddings(dataset)
+    
+    df = pd.DataFrame(columns=['index', 'uniqueness', 'label','sqrt_area','embeddings_x', 'embeddings_y'])
+    
+    index = 0
+    for sample in dataset:
+        for detection in sample.ground_truth.detections:
+            df.loc[index] = [index, sample.uniqueness, detection.label, math.sqrt(detection.area), embeddings[index,0], embeddings[index, 1]]
+            df.loc[index] = [index, sample.uniqueness, detection.label, math.sqrt(detection.area), random.random(), random.random()]
+            index += 1
+    
+    return df
 
 class Dataset:
 
@@ -110,72 +129,79 @@ class Dataset:
         self.create_connection()
         self.create_partial_dataset()
 
-class Graph:
-    def create_app(self):
-        self.app = dash.Dash(__name__)
-        self.app.layout = dash.html.Div(children=[
-            dash.dcc.Graph(
-                id=self.key['graph'],
-                figure=self.figure
-            ),
-            dash.html.Div(
-                id=self.key['output']
-            )
-        ])
-
-    def create_figure(self, embeddings):
-        self.trace = dict(
-            type='scatter',
-            x=embeddings[:, 0],
-            y=embeddings[:, 1],
-            mode='markers'
-        )
-
-        self.layout = dict(
-            width=600, 
-            height=550, 
-            autosize=False,
-            xaxis=dict(zeroline=False),
-            dragmode='lasso',
-            hovermode='closest'
-        )
-
-        self.figure = FigureWidget(data=[self.trace], layout=self.layout)
+def create_app(dataset):
     
-    def create_key(self, key=None):
-        if key is None: key = hash(self)
-        self.key = dict()
-        self.key['graph'] = f'{key} key'
-        self.key['output'] = f'{key} output'
-
-    def __init__(self, embeddings):
-        self.create_key()
-        self.create_figure(embeddings)
-        self.create_app()
+    def create_figure(df, min_uniqueness, max_uniqueness, min_sqrt_area, max_sqrt_area):
+        mask = (df['uniqueness'] >= min_uniqueness) & (df['uniqueness'] <= max_uniqueness) & (df['sqrt_area'] >= min_sqrt_area) & (df['sqrt_area'] <= max_sqrt_area)
+        fig = px.scatter(df[mask], x='embeddings_x', y='embeddings_y', color='label', size='sqrt_area', custom_data=['index'], hover_data=['uniqueness'])
+        figure = go.FigureWidget(fig)
+        figure.update_layout(
+            autosize=True,
+            width=1080,
+            height=566,
+        )
+        return figure
     
-    def get_app(self):
-        return self.app
+    df = create_dataframe(dataset)
 
-def main(dataset, dash_port, session_port, key):
-    embeddings = compute_embeddings(dataset)
-    dataset = Dataset(dataset)
-    graph = Graph(embeddings)
-    app = graph.get_app()
+    global_uniqueness_range = (0, 1)
+    global_sqrt_area_range = (0, df['sqrt_area'].max())
+    
+    figure = create_figure(df, global_uniqueness_range[0], global_uniqueness_range[1], global_sqrt_area_range[0], global_sqrt_area_range[1])
+
+    app = dash.Dash(__name__)
+    app.layout = dash.html.Div(children=[
+        dash.html.H3('Embedding Visualization'),
+        dash.dcc.Graph(
+            id='graph',
+            figure=figure
+        ),
+        dash.html.P(id='num_sample'),
+        dash.html.P('Filter by uniqueness:'),
+        dash.dcc.RangeSlider(
+            id='uniqueness-slider',
+            min=0, max=1, step=0.001,
+            marks={0: '0', 1: '1'},
+            value=[0, 1]
+        ),
+        dash.html.P('Filter by sqrt area:'),
+        dash.dcc.RangeSlider(
+            id='sqrt-area-slider',
+            min=0, max=df['sqrt_area'].max(), step=df['sqrt_area'].max()/1000,
+            marks={0: '0', df['sqrt_area'].max(): f'{df["sqrt_area"].max()}'},
+            value=[0, df['sqrt_area'].max()]
+        ),
+    ])
 
     @app.callback(
-        dash.Output(component_id=graph.key['output'], component_property='children'),
-        dash.Input(component_id=graph.key['graph'], component_property='selectedData')
+        dash.Output('graph', 'figure'), 
+        dash.Input('uniqueness-slider', 'value'),
+        dash.Input('sqrt-area-slider', 'value'),
+    )
+    def update_figure(uniqueness_slider_range, sqrt_area_slider_range):
+        global_uniqueness_range = uniqueness_slider_range
+        global_sqrt_area_range = sqrt_area_slider_range
+        figure = create_figure(df, global_uniqueness_range[0], global_uniqueness_range[1], global_sqrt_area_range[0], global_sqrt_area_range[1])
+        print(f'Updated uniquesness range to {global_uniqueness_range}')
+        print(f'Updated sqrt area range to {global_sqrt_area_range}')
+        return figure
+    
+    return app
+
+def main(dataset, dash_port, session_port, key):
+    app = create_app(dataset)
+    dataset = Dataset(dataset)
+
+    @app.callback(
+        dash.Output(component_id='num_sample', component_property='children'),
+        dash.Input(component_id='graph', component_property='selectedData')
     )
     def update(input_value):
         if input_value is not None:
-            indices = [point['pointIndex'] for point in input_value['points']]
+            indices = [point['customdata'][0] for point in input_value['points']]
             dataset.sync()
             dataset.update_partial_dataset(indices)
         return f'Number of sample: {len(dataset.partial_dataset)}'
     
     session = fo.launch_app(dataset.partial_dataset, address='0.0.0.0', port=session_port, remote=True)
     app.run_server(debug=False, host='0.0.0.0', port=dash_port)
-
-    dataset.sync()
-    dataset = dataset.dataset
-    return dataset
