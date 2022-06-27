@@ -104,7 +104,7 @@ def convert_labels(
             annotations["category_id"] = label_index
 
     # save coco json
-    with open(os.path.join(dataset_dir, "labels_new.json"), "w") as f:
+    with open(os.path.join(dataset_dir, "labels.json"), "w") as f:
         f.write(json.dumps(labels_json))
 
 

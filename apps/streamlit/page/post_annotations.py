@@ -128,7 +128,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
         st.session_state.cvat_dataset.tasks_upload(
             task_id=task_id,
             fileformat="COCO 1.0",
-            filename=os.path.join(dataset_dir, "labels_new.json")
+            filename=os.path.join(dataset_dir, "labels.json")
         )
 
 if __name__ == "__main__":
