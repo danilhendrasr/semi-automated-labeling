@@ -88,26 +88,33 @@ def post_annotations(dump_dir: str, port: int = 6161):
             fileformat="COCO 1.0",
             filename=f"{task_id}.zip",
             extract=True,
+            to_fiftyone=True
         )
         st.success(f"Download Dataset Task {task_id}")
         # # apply nms
-        label_path = os.path.join(dataset_dir, "annotations", "instances_default.json")
+        label_path = os.path.join(dataset_dir, "labels.json")
         utils.apply_nms(
             label_path=label_path,
             iou_threshold=float(iou_thres),
             dump_json=True,
         )
         st.success("Apply NMS")
-        # # convert to fiftyone COCO
-        fiftyone51.convert_to_coco(dataset_dir=dataset_dir)
-        # preview to fiftyone
-        st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
+
+        # # preview to fiftyone
+        # st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
+        #     dataset_name=task_id,
+        #     dataset_dir=dataset_dir,
+        #     delete_existing=True,
+        #     port=port,
+        # )
+
+        # load datasset to fiftyone
+        st.session_state.dataset, st.session_state.patches = fiftyone51.load_fiftyone(
             dataset_name=task_id,
             dataset_dir=dataset_dir,
             delete_existing=True,
-            port=port,
         )
-        st.success("Preview to FiftyOne")
+        st.success("Load dataset to FiftyOne")
     
     if save_tags_btn:
         # save patches tags

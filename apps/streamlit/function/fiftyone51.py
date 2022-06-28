@@ -78,6 +78,33 @@ def preview_fiftyone(
         return dataset
 
 
+def load_fiftyone(
+    dataset_name: str,
+    dataset_dir: str,
+    delete_existing: bool = True,
+    is_patches: bool = True,
+):
+    """Load dataset to fiftyone"""
+    if delete_existing:
+        list_datasets = fo.list_datasets()
+        try:
+            [fo.delete_dataset(name) for name in list_datasets]
+        except:
+            print("[INFO] No Existing Dataset")
+
+    dataset = fo.Dataset.from_dir(
+        dataset_dir=dataset_dir,
+        dataset_type=fo.types.COCODetectionDataset,
+        name=dataset_name,
+    )
+
+    if is_patches:
+        gt_patches = dataset.to_patches("ground_truth")
+        return dataset, gt_patches
+    else: 
+        return dataset
+
+
 def get_tags(patches):
     """get patches tags"""
     TAGS = []
