@@ -89,7 +89,6 @@ def load_fiftyone(
     if delete_existing:
         try:
             fo.delete_dataset(dataset_name)
-
         except:
             print("[INFO] No Existing Dataset")
 

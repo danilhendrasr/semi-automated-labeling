@@ -1,9 +1,9 @@
 import os
 
 port = {
-    'flask' : 7011,
-    'fiftyone' : 7012,
-    'dash' : 7013,
+    'flask' : 7021,
+    'fiftyone' : 7022,
+    'dash' : 7023,
 }
 
 host = address = ip = '0.0.0.0'

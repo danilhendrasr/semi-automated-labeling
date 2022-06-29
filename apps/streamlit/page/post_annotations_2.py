@@ -100,8 +100,16 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
         st.success("Apply NMS")
 
+        # # preview to fiftyone
+        # st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
+        #     dataset_name=task_id,
+        #     dataset_dir=dataset_dir,
+        #     delete_existing=True,
+        #     port=port,
+        # )
+
         # load datasset to fiftyone
-        st.session_state.dataset = fiftyone51.load_fiftyone(
+        st.session_state.dataset, st.session_state.patches = fiftyone51.load_fiftyone(
             dataset_name=task_id,
             dataset_dir=dataset_dir,
             delete_existing=True,
@@ -110,8 +118,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
     
     if save_tags_btn:
         # save patches tags
-        patches = st.session_state.dataset.to_patches('ground_truth')
-        st.session_state.tags = fiftyone51.get_tags(patches=patches)
+        st.session_state.tags = fiftyone51.get_tags(patches=st.session_state.patches)
 
     if convert_btn:
         # convert labels
