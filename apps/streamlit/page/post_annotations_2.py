@@ -91,6 +91,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             to_fiftyone=True
         )
         st.success(f"Download Dataset Task {task_id}")
+        
         # # apply nms
         label_path = os.path.join(dataset_dir, "labels.json")
         utils.apply_nms(
@@ -100,20 +101,21 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
         st.success("Apply NMS")
 
-        # # preview to fiftyone
-        # st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
-        #     dataset_name=task_id,
-        #     dataset_dir=dataset_dir,
-        #     delete_existing=True,
-        #     port=port,
-        # )
-
-        # load datasset to fiftyone
-        st.session_state.dataset, st.session_state.patches = fiftyone51.load_fiftyone(
+        # preview to fiftyone
+        st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
             dataset_name=task_id,
             dataset_dir=dataset_dir,
             delete_existing=True,
+            port=port,
         )
+
+        # # load datasset to fiftyone
+        # st.session_state.dataset, st.session_state.patches = fiftyone51.load_fiftyone(
+        #     dataset_name=task_id,
+        #     dataset_dir=dataset_dir,
+        #     delete_existing=True,
+        # )
+
         st.success("Load dataset to FiftyOne")
     
     if save_tags_btn:
