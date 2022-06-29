@@ -31,6 +31,7 @@ class DVC:
     def add(self, item: str):
         """ Add item to DVC tracking """
         os.chdir(self.repo_dir)
+        os.system("dvc config core.autostage true")
         os.system(f"dvc add {item}")
 
     def push(self):

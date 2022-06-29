@@ -1,12 +1,14 @@
 """ Dataset Versioning """
 
 import os
+from git import Repo
 
 import streamlit as st
+from function import fiftyone51
 from function.repository import Repository
 from function.dvc import DVC
 from function import cvat
-from function.utils import merge_yolo
+from function.report import GenerateReport
 
 
 def dataset_versioning(
@@ -72,7 +74,7 @@ def dataset_versioning(
     except:
         release_tags = []
 
-    if is_merging == "True" and annot_type == "YOLO 1.1":
+    if is_merging == "True":
         with col1[3]:
             merge_ref = st.selectbox(label="Merging Dataset", options=release_tags)
 
@@ -98,7 +100,8 @@ def dataset_versioning(
 
     if btn:
         # init repository
-        if is_merging == "True" and annot_type == "YOLO 1.1":
+        if is_merging == "True":
+            # TODO: fix reference tag
             repo = Repository(repo_url=url, ref=merge_ref, token=token, dump_dir=dump_dir)
         else:
             # default to main branch
@@ -114,44 +117,56 @@ def dataset_versioning(
 
         # clone repo
         repo.clone(force=True)
-        st.success(f'Success Dataset Repository {"/".join(url.split("/")[3:5])}')
+        st.success(f'Success Clone Dataset Registry {"/".join(url.split("/")[3:5])}')
 
         # init DVC
         dvc = DVC(path=repo.repo_dir)
 
-        # dump dataset
-        if is_merging == "True" and annot_type == "YOLO 1.1":
+        # donwload dataset
+        # TODO: apply merging with fiftyone
+        if is_merging == "True":
             dataset.tasks_dump(
                 task_id=task_id,
                 fileformat=annot_type,
                 filename="new_dataset.zip",
                 extract=True,
                 remove_zip=True,
+                to_fiftyone=True
             )
         else:
             dataset.tasks_dump(
-                task_id=task_id, 
-                fileformat=annot_type, 
-                extract=True, 
-                remove_zip=True
+                task_id=task_id,
+                fileformat=annot_type,
+                extract=True,
+                remove_zip=True,
+                to_fiftyone=True
             )
         st.success(f"Download Dataset Task {task_id}")
 
         # pull dataset for merging
-        if is_merging == "True" and annot_type == "YOLO 1.1":
+        if is_merging == "True":
             dvc.pull()
-            # merge dataset
-            merge_yolo(
-                src=os.path.join(repo.repo_dir, 'new_dataset'), 
-                dst=os.path.join(repo.repo_dir, 'dataset')
-            )
+            # rename dataset directory from dvc pull
+            os.rename(os.path.join(repo.repo_dir, "dataset"), os.path.join(repo.repo_dir, "old_dataset"))
+            fiftyone51.merging_dataset(format=annot_type, repo_dir=repo.repo_dir)
             st.success(f'Success Merging {merge_ref} to {ref}')
 
         # add dataset to dvc
+        repo.checkout(ref='main')
         dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
 
-        # # tag version dataset
+        # create report
+        report = GenerateReport(
+            repo_dir=repo.repo_dir,
+            format=annot_type,
+            version=ref,
+            desc=desc,
+            filename="README"
+        )
+        report.generate()
+
+        # versioning dataset
         repo.create_release(title=title, desc=desc, tag=ref, with_commit=True)
         st.success(f"Success Versioning Dataset on {ref}")
 

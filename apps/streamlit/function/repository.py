@@ -11,6 +11,7 @@ import git
 import requests
 
 from function.dvc import DVC
+# from dvc import DVC
 
 
 class RemoteRepoOptions(TypedDict):
@@ -98,6 +99,12 @@ class Repository:
         print(f'[INFO] Clone Repo in {self.repo_dir}')
         return self.repo_dir
 
+    def checkout(self, ref='main'):
+        repo = git.Repo(self.repo_dir)
+        repo.git.checkout(ref)
+
+        print(f"[INFO] Checkout to {ref}")
+
     def push(self):
         repo = git.Repo(self.repo_dir)
         repo.remotes.origin.push()
@@ -178,7 +185,7 @@ class Repository:
 
         release_dict = {
             "tag_name": tag,
-            "target_commitish": self.ref,
+            "target_commitish": "main", # self.ref
             "name": title,
             "body": desc,
             "draft": False,
@@ -193,8 +200,7 @@ class Repository:
         )
 
         print(response)
-        print(
-            f'[INFO] Success release {tag} with release id {response.json()["id"]}')
+        print(f'[INFO] Success release {tag} with release id {response.json()["id"]}')
 
     def delete_release(self, release_id: str):
         """ Delete release by release id """
@@ -226,14 +232,22 @@ class Repository:
 if __name__ == '__main__':
 
     repository = Repository(
-        repo_url='https://github.com/ruhyadi/sample-dataset-registry',
-        ref='main',
-        token='ghp_dKM1r4cfc1HWM7g97scGSatlgZWH0S3nfsZ'
+        repo_url='https://github.com/ruhyadi/dataset-registry-002',
+        ref='v1.2',
+        token='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',
+        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
 
-    repository.clone(force=True)
+    # repository.clone(force=True)
 
-    repository.list_tags()
+    repository.checkout('main')
+    repository.create_release(
+        title='title', desc='desc', tag='v1.2.1', with_commit=True
+    )
+
+    # repository.checkout()
+
+    # repository.list_tags()
 
     # repository.init(is_private=True)
     # repository.clone(force=True)
