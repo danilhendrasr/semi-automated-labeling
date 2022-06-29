@@ -5,6 +5,7 @@ from typing import List
 import fiftyone as fo
 from fiftyone import ViewField as F
 import fiftyone.brain as fob
+import requests
 
 import os
 import json
@@ -82,13 +83,13 @@ def load_fiftyone(
     dataset_name: str,
     dataset_dir: str,
     delete_existing: bool = True,
-    is_patches: bool = True,
+    url: str = 'http://192.168.103.67:6001/compute'
 ):
     """Load dataset to fiftyone"""
     if delete_existing:
-        list_datasets = fo.list_datasets()
         try:
-            [fo.delete_dataset(name) for name in list_datasets]
+            fo.delete_dataset(dataset_name)
+
         except:
             print("[INFO] No Existing Dataset")
 
@@ -97,12 +98,10 @@ def load_fiftyone(
         dataset_type=fo.types.COCODetectionDataset,
         name=dataset_name,
     )
+    
+    requests.post(url=url, json={'name':dataset_name})
 
-    if is_patches:
-        gt_patches = dataset.to_patches("ground_truth")
-        return dataset, gt_patches
-    else: 
-        return dataset
+    return dataset
 
 
 def get_tags(patches):
