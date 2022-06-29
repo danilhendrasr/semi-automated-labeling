@@ -15,6 +15,8 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
         st.session_state.cvat = None
     if "validac" not in st.session_state:
         st.session_state.validac = None
+    if "validac" not in st.session_state:
+        st.session_state.validac = None
 
     st.header("Dataset Quality")
 
@@ -32,30 +34,30 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
     col1 = st.columns([2, 2, 2])
     with col1[0]:
         gt_id = st.text_input(
-            label="Task GT",
-            value="1",
+            label="Task Ground Truth",
+            value="52",
             key=f"{page_key}",
         )
     with col1[1]:
         pred_id = st.text_input(
             label="Task Prediction",
-            value="2",
+            value="51",
             key=f"{page_key}",
         )
     with col1[2]:
         iou = st.text_input(
-            label="IOU",
+            label="IoU Threshold",
             value="0.5",
             key=f"{page_key}",
         )
 
-    col2 = st.columns([1, 1, 4])
+    col2 = st.columns([1, 2, 3])
     with col2[0]:
-        validac = st.button(label="Validac")
+        evaluate = st.button(label="Evaluate")
     with col2[1]:
-        preview = st.button(label="Preview")
+        preview = st.button(label="Preview in Fiftyone")
 
-    if validac:
+    if evaluate:
         """validation annotations with ground truth"""
         st.session_state.cvat = CVAT(
             username=username,
@@ -77,8 +79,48 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
         st.session_state.validac = Validac(
             gt_id=gt_id, pred_id=pred_id, iou_threshold=iou, dump_dir=dump_dir
         )
+        results = st.session_state.validac.compute_results()
+        # mean average precision
         mAP = st.session_state.validac.compute_mAP()
-        st.metric(label="mAP", value=round(mAP, 4))
+        # dataset stats
+        stats = st.session_state.validac.stats()
+
+        # generate metrics
+        col3 = st.columns([1, 1, 1, 1])
+        with col3[0]:
+            st.metric(label="mAP", value=round(mAP, 4))
+        with col3[1]:
+            st.metric(label="Total Images", value=stats[0])
+        with col3[2]:
+            st.metric(label="Total Annotations (Pred)", value=stats[1])
+        with col3[3]:
+            st.metric(label="Dataset Size", value=stats[2])
+
+        # conf matrix and embeddings
+        col4 = st.columns([1, 1])
+        with col4[0]:
+            # plot confusion matrix
+            st.write("Confusion Matrix")
+            conf_mtx = st.session_state.validac.confusion_matrix()
+            st.pyplot(conf_mtx)
+        with col4[1]:
+            # plot embedding
+            st.write("Prediction Embedding")
+            st.session_state.validac.embedding()
+            st.image(os.path.join(dump_dir, "embedding.png"))
+
+        # distribution
+        col5 = st.columns([1, 1])
+        with col5[0]:
+            # plot distribution
+            st.write("Ground Truth Distribution")
+            st.session_state.validac.gt_distribution()
+            st.image(os.path.join(dump_dir, "gt_distribution.png"))
+        with col5[1]:
+            # plot distribution
+            st.write("Predictions Distribution")
+            st.session_state.validac.pred_distribution()
+            st.image(os.path.join(dump_dir, "pred_distribution.png"))
 
     if preview:
         """preview evaluation to fiftyone"""
