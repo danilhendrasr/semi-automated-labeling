@@ -2,6 +2,7 @@ from page.model_registry import model_registry
 from page.model_deployment import model_deployment
 from page.post_annotations import post_annotations
 from page.dataset_versioning import dataset_versioning
+from page.dataset_quality import dataset_quality
 
 import streamlit as st
 
@@ -13,6 +14,7 @@ with st.sidebar:
         [
             "Model Registry",
             "Model Deployment",
+            "Dataset Quality",
             "Dataset Versioning",
             "Label Evaluator",
         ],
@@ -27,6 +29,11 @@ if menu == "Model Registry":
 if menu == "Model Deployment":
     model_deployment(
         dump_dir="/home/intern-didir/Repository/labelling/apps/cvat/serverless"
+    )
+
+if menu == "Dataset Quality":
+    dataset_quality(
+        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
 
 if menu == "Dataset Versioning":
