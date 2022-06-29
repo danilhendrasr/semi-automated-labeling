@@ -1,6 +1,9 @@
 import fiftyone as fo
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, redirect, jsonify
+from threading import Timer
+from datetime import datetime
 import config, utils
+import os, shutil
 
 app = Flask(__name__)
 dataset = fo.Dataset()
@@ -18,10 +21,10 @@ def preview_embedding(name):
 def compute():
     data = request.get_json()
     name = data['name']
-
+    
     dataset =  fo.load_dataset(name)
     df = utils.create_dataframe(dataset)
-    save_path = f'{name}.pickle'
+    save_path = f'{config.cache_folder}/{name}.pickle'
     df.to_pickle(save_path)
 
     print(f'Saved computation to {save_path}')
@@ -42,7 +45,27 @@ def fiftyone_load():
     print(f'Updated view of dataset {name} to {len(ids)} patches.')
     return '', 204
 
+@app.route('/fiftyone/save/view', methods=['POST'])
+def fiftyone_save_session_view():
+    global session
+    view = session.view
+    if type(view) == fo.core.patches.PatchesView:
+        view.save()
+        print(f'{datetime.now().time()} Saved view {view.name}.')
+    return '', 204
+
+def auto_fiftyone_save_session_view(interval):
+    Timer(interval, auto_fiftyone_save_session_view, [interval]).start()
+    fiftyone_save_session_view()
+
+@app.route('/delete/cache', methods=['POST'])
+def delete_cache():
+    shutil.rmtree(f'{config.cache_folder}')
+    os.makedirs(f'{config.cache_folder}')
+    print(f'Deleted cache folder.')
+    return '', 204
+
 if __name__ == '__main__':
     session = fo.launch_app(dataset, address=config.address, port=config.port['fiftyone'], remote=True)
+    auto_fiftyone_save_session_view(config.auto_save_interval)
     app.run(host=config.host, port=config.port['flask'])
-    # app.run(host='0.0.0.0', port='6000')
