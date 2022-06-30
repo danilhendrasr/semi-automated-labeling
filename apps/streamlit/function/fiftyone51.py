@@ -308,6 +308,75 @@ def merging_dataset(format: str, repo_dir: str):
     shutil.rmtree(os.path.join(repo_dir, "old_dataset"))
     shutil.rmtree(os.path.join(repo_dir, "new_dataset"))
 
+class Splitter:
+    """split dataset into gt and preds"""
+    def __init__(self, task_id, percentage, dataset_dir, dump_dir):
+        self.task_id = task_id
+        self.percentage = percentage
+        self.dataset_dir = dataset_dir
+        self.dump_dir = dump_dir
+        self.export_dir = os.path.join(self.dump_dir, f"{self.task_id}_gt")
+        self.dataset = None
+
+    def get_info(self):
+        # delete existing fiftyone dataset
+        list_datasets = fo.list_datasets()
+        try:
+            [fo.delete_dataset(name) for name in list_datasets]
+        except:
+            print("[INFO] No Existing Dataset")
+        # initialize dataset
+        self.dataset = fo.Dataset.from_dir(
+            dataset_dir=self.dataset_dir,
+            dataset_type=fo.types.COCODetectionDataset,
+            name=self.task_id,
+        )
+        # delete images in dataset
+        total_img = self.dataset.stats(include_media=True)["samples_count"]
+        total_del = int((100 - int(self.percentage))/100 * total_img)
+        deleted = self.dataset.take(total_del)
+        self.dataset.delete_samples(deleted)
+
+        return [total_img, (total_img - total_del)]
+
+    def split(self):
+        """export split dataset to directory"""
+        shutil.rmtree(self.export_dir)
+        self.dataset.export(
+            export_dir=self.export_dir, 
+            dataset_type=fo.types.COCODetectionDataset
+        )
+
+def splitter(task_id, percentage, dataset_dir, dump_dir):
+    """Dataset ground-truth and preds splitter"""
+    export_dir = os.path.join(dump_dir, f"{task_id}_gt")
+    shutil.rmtree(export_dir)
+    # delete existing fiftyone dataset
+    list_datasets = fo.list_datasets()
+    try:
+        [fo.delete_dataset(name) for name in list_datasets]
+    except:
+        print("[INFO] No Existing Dataset")
+    # initialize dataset
+    dataset = fo.Dataset.from_dir(
+        dataset_dir=dataset_dir,
+        dataset_type=fo.types.COCODetectionDataset,
+        name=task_id,
+    )
+    # delete images in dataset
+    total_img = dataset.stats(include_media=True)["samples_count"]
+    total_del = int((100 - int(percentage))/100 * total_img)
+    deleted = dataset.take(total_del)
+    dataset.delete_samples(deleted)
+    # export dataset
+    dataset.export(
+        export_dir=export_dir, 
+        dataset_type=fo.types.COCODetectionDataset
+    )
+
+    return export_dir
+
+
 if __name__ == "__main__":
     pass
 

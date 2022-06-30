@@ -79,6 +79,7 @@ class Validac:
         return plot
 
     def embedding(self):
+        # TODO: embeddings on gt and pred
         """plot object (bounding-box) embeddings"""
         results = fob.compute_visualization(self.dataset_gt, patches_field="predictions")
         bbox_area = F("bounding_box")[2] * F("bounding_box")[3]
