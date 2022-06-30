@@ -4,6 +4,7 @@ import pandas as pd
 import math
 
 def compute_embeddings(dataset):
+    fob.compute_uniqueness(dataset)
     return fob.compute_visualization(
         dataset,
         num_dims=2,
