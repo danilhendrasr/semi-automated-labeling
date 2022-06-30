@@ -9,8 +9,8 @@ import os
 import config
 
 def create_figure(df, min_uniqueness, max_uniqueness, min_sqrt_area, max_sqrt_area):
-    mask = (df['uniqueness'] >= min_uniqueness) & (df['uniqueness'] <= max_uniqueness) & (df['sqrt_area'] >= min_sqrt_area) & (df['sqrt_area'] <= max_sqrt_area)
-    fig = px.scatter(df[mask], x='embeddings_x', y='embeddings_y', color='label', size='sqrt_area', custom_data=['id'], hover_data=['uniqueness'])
+    mask = (df['uniqueness'] >= min_uniqueness) & (df['uniqueness'] <= max_uniqueness) & (df['normalize_sqrt_area'] >= min_sqrt_area) & (df['normalize_sqrt_area'] <= max_sqrt_area)
+    fig = px.scatter(df[mask], x='embeddings_x', y='embeddings_y', color='label', size='normalize_sqrt_area', custom_data=['id'], hover_data=['uniqueness'])
     figure = go.FigureWidget(fig)
     figure.update_layout(
         dragmode='lasso'
@@ -27,7 +27,7 @@ def main(name):
     global df
     df = pd.read_pickle(file_path)
     uniqueness_range = (0, 1)
-    sqrt_area_range = (0, math.ceil(df['sqrt_area'].max()))
+    sqrt_area_range = (0, 1)
 
     figure = create_figure(df, uniqueness_range[0], uniqueness_range[1], sqrt_area_range[0], sqrt_area_range[1])
 
@@ -87,7 +87,7 @@ def main(name):
             ),
             dbc.Container(
                 children = [
-                    dash.html.B('Filter by Sqrt Area'),
+                    dash.html.B('Filter by Normalized Sqrt Area'),
                     dash.dcc.RangeSlider(
                         id='sqrt-area-slider',
                         min=sqrt_area_range[0], max=sqrt_area_range[1], step=(sqrt_area_range[1]-sqrt_area_range[0])/1000,
