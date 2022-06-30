@@ -7,3 +7,5 @@ streamlit
 streamlit_option_menu
 python-dotenv
 mdutils
+
+bokeh==2.4.1
