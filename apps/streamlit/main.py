@@ -31,11 +31,11 @@ if menu == "Model Deployment":
 
 if menu == "Dataset Versioning":
     dataset_versioning(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
+        dump_dir="./dump"
     )
 
 if menu == "Label Evaluator":
     post_annotations(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump", 
+        dump_dir="./dump", 
         port=6161
     )
