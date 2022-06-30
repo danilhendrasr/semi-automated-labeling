@@ -105,7 +105,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             dataset_name=task_id,
             dataset_dir=dataset_dir,
             delete_existing=True,
-            url='http://192.168.103.67:7021/compute'
+            url='http://192.168.103.67:6001/compute'
         )
         st.success("Load dataset to FiftyOne")
     

@@ -65,6 +65,12 @@ def delete_cache():
     print(f'Deleted cache folder.')
     return '', 204
 
+@app.route('/fiftyone/delete/dataset', methods=['POST'])
+def fiftyone_delete_dataset():
+    for name in fo.list_datasets():
+        fo.delete_dataset(name)
+    return '', 204
+
 if __name__ == '__main__':
     session = fo.launch_app(dataset, address=config.address, port=config.port['fiftyone'], remote=True)
     auto_fiftyone_save_session_view(config.auto_save_interval)

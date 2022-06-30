@@ -31,10 +31,12 @@ if menu == "Model Deployment":
     model_deployment(
         dump_dir="/home/intern-didir/Repository/labelling/apps/cvat/serverless"
     )
+
 if menu == "Dataset Splitter":
     dataset_splitter(
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
+    
 if menu == "Dataset Quality":
     dataset_quality(
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
@@ -42,7 +44,7 @@ if menu == "Dataset Quality":
 
 if menu == "Label Evaluator":
     post_annotations(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump", 
+        dump_dir="./dump", 
         port=6161
     )
 

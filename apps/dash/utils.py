@@ -1,9 +1,13 @@
 import fiftyone as fo
 import fiftyone.brain as fob
 import pandas as pd
+import numpy as np
 import math
 
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
 def compute_embeddings(dataset):
+    fob.compute_uniqueness(dataset)
     return fob.compute_visualization(
         dataset,
         num_dims=2,
@@ -16,7 +20,7 @@ def compute_embeddings(dataset):
 def create_dataframe(dataset):
     embeddings = compute_embeddings(dataset)
     
-    df = pd.DataFrame(columns=['id', 'uniqueness', 'label', 'area', 'sqrt_area','embeddings_x', 'embeddings_y'])  
+    df = pd.DataFrame(columns=['id', 'uniqueness', 'label', 'area', 'sqrt_area', 'embeddings_x', 'embeddings_y'])  
     
     index = 0
 
@@ -32,7 +36,7 @@ def create_dataframe(dataset):
             try: label = detection.label
             except: label = ''
 
-            try: area = detection.area
+            try: area = detection.bounding_box[2] * detection.bounding_box[2]
             except: area = 1
 
             embeddings_x = embeddings[index, 0]
@@ -41,5 +45,9 @@ def create_dataframe(dataset):
             df.loc[index] = [id, uniqueness, label, area, math.sqrt(area), embeddings_x, embeddings_y]
 
             index += 1
-            
+
+    # Normalize sqrt area
+    df['normalize_sqrt_area'] = StandardScaler().fit_transform(np.array(df['sqrt_area']).reshape(-1, 1))
+    df['normalize_sqrt_area'] = MinMaxScaler().fit_transform(np.array(df['normalize_sqrt_area']).reshape(-1, 1))
+
     return df
