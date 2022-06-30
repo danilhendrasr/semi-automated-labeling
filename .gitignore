@@ -171,3 +171,5 @@ nuctl
 apps/streamlit/master2.py
 apps/streamlit/page/post_annotations2.py
 apps/streamlit/page/post_annotations3.py
+
+/apps/streamlit/dump
