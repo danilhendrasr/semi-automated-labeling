@@ -32,7 +32,7 @@ def create_dataframe(dataset):
             try: label = detection.label
             except: label = ''
 
-            try: area = detection.area
+            try: area = detection.bounding_box[2] * detection.bounding_box[2]
             except: area = 1
 
             embeddings_x = embeddings[index, 0]
