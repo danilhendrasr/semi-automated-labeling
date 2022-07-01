@@ -1,5 +1,6 @@
 """ cvat api class """
 
+from .fiftyone51 import convert_format
 import json
 import logging
 import os
@@ -11,13 +12,11 @@ import mimetypes
 from time import sleep
 from PIL import Image
 
-from typing import Tuple
+from typing import List, Tuple
 
 from yaml import dump
 
 log = logging.getLogger(__name__)
-
-from .fiftyone51 import convert_format
 
 
 class CVAT:
@@ -56,7 +55,8 @@ class CVAT:
     def get_dataset_name(self, task_id):
         """Get dataset name by task id"""
         output = self.tasks_list(use_json_output=True)
-        dataset_name = [data["name"] for data in output if data["id"] == task_id]
+        dataset_name = [data["name"]
+                        for data in output if data["id"] == task_id]
 
         return dataset_name.replace(" ", "_").lower()
 
@@ -70,13 +70,17 @@ class CVAT:
                 "client_files[{}]".format(i): open(f, "rb")
                 for i, f in enumerate(resources)
             }
+            print(f"files {files}")
+            print(f"resources {resources}")
         elif resource_type == "remote":
-            data = {"remote_files[{}]".format(i): f for i, f in enumerate(resources)}
+            data = {"remote_files[{}]".format(
+                i): f for i, f in enumerate(resources)}
         elif resource_type == "share":
-            data = {"server_files[{}]".format(i): f for i, f in enumerate(resources)}
+            data = {"server_files[{}]".format(
+                i): f for i, f in enumerate(resources)}
         data["image_quality"] = 70
 
-        ## capture additional kwargs
+        # capture additional kwargs
         for flag in [
             "chunk_size",
             "copy_data",
@@ -97,9 +101,9 @@ class CVAT:
 
     def tasks_create(
         self,
-        name,
-        labels,
-        resource_type,
+        name: str,
+        labels: List[str],
+        resource_type: str,
         resources,
         annotation_path="",
         annotation_format="COCO 1.0",
@@ -110,7 +114,21 @@ class CVAT:
         **kwargs,
     ):
         """Create a new task with the given name and labels JSON and
-        add the files to it."""
+        add the files to it.
+
+
+        Args:
+            name (_type_): _description_
+            labels (_type_): _description_
+            resource_type (_type_): _description_
+            resources (_type_): _description_
+            annotation_path (str, optional): _description_. Defaults to "".
+            annotation_format (str, optional): _description_. Defaults to "COCO 1.0".
+            completion_verification_period (int, optional): _description_. Defaults to 20.
+            git_completion_verification_period (int, optional): _description_. Defaults to 2.
+            dataset_repository_url (str, optional): _description_. Defaults to "".
+            lfs (bool, optional): _description_. Defaults to False.
+        """
         url = self.api.tasks
         labels = [] if kwargs.get("project_id") is not None else labels
         data = {"name": name, "labels": labels}
@@ -142,11 +160,13 @@ class CVAT:
                 )
                 log.info(logger_string)
 
-            self.tasks_upload(task_id, annotation_format, annotation_path, **kwargs)
+            self.tasks_upload(task_id, annotation_format,
+                              annotation_path, **kwargs)
         if dataset_repository_url:
             response = self.session.post(
                 self.api.git_create(task_id),
-                json={"path": dataset_repository_url, "lfs": lfs, "tid": task_id},
+                json={"path": dataset_repository_url,
+                      "lfs": lfs, "tid": task_id},
             )
             response_json = response.json()
             rq_id = response_json["rq_id"]
@@ -207,7 +227,8 @@ class CVAT:
             if im_ext in (".jpe", ".jpeg", None):
                 im_ext = ".jpg"
 
-            outfile = "task_{}_frame_{:06d}{}".format(task_id, frame_id, im_ext)
+            outfile = "task_{}_frame_{:06d}{}".format(
+                task_id, frame_id, im_ext)
             im.save(os.path.join(outdir, outfile))
 
     def tasks_dump_annotations(
@@ -273,7 +294,8 @@ class CVAT:
             if response.status_code == 201:
                 break
 
-        url = "".join((url.split("?")[0], "?action=download&", url.split("?")[-1]))
+        url = "".join(
+            (url.split("?")[0], "?action=download&", url.split("?")[-1]))
         response = self.session.get(url)
         response.raise_for_status()
 
@@ -290,7 +312,7 @@ class CVAT:
                 except:
                     shutil.rmtree(dataset_dir)
                 zip.extractall(dataset_dir)
-        
+
         if remove_zip:
             os.remove(dataset_name)
 
@@ -455,8 +477,8 @@ if __name__ == "__main__":
     # )
 
     cvat.tasks_dump(
-        task_id=39, 
-        fileformat='YOLO 1.1', 
+        task_id=39,
+        fileformat='YOLO 1.1',
         filename='sample.zip',
         extract=True,
         remove_zip=True)

@@ -9,6 +9,7 @@ from function import fiftyone51
 from function import cvat
 from function import utils
 
+
 def post_annotations(dump_dir: str, port: int = 6161):
 
     # state
@@ -77,13 +78,14 @@ def post_annotations(dump_dir: str, port: int = 6161):
     send_to_cvat_btn = st.button(label="Send Back to CVAT")
 
     if btn:
-        # initiate dataset
-        st.session_state.cvat_dataset = cvat.CVAT(
-            username=username,
-            password=password,
-            host="http://192.168.103.67:8080",
-            dump_dir=dump_dir,
-        )
+        if 'cvat_dataset' not in st.session_state:
+            # initiate dataset
+            st.session_state.cvat_dataset = cvat.CVAT(
+                username=username,
+                password=password,
+                host="http://192.168.103.67:8080",
+                dump_dir=dump_dir,
+            )
         # download dataset
         st.session_state.cvat_dataset.tasks_dump(
             task_id=task_id,
@@ -129,7 +131,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             st.bokeh_chart(div)
 
         open_new_tab(f'http://192.168.103.67:6001/embedding/{task_id}')
-    
+
     if save_tags_btn:
         # save patches tags
         if with_embd:
@@ -155,6 +157,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             fileformat="COCO 1.0",
             filename=os.path.join(dataset_dir, "labels.json")
         )
+
 
 if __name__ == "__main__":
     post_annotations(
