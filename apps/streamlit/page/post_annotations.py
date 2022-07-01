@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import streamlit as st
-import streamlit.components.v1 as components
+from bokeh.models.widgets import Div
 
 from function import fiftyone51
 from function import cvat
@@ -34,7 +34,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
     st.header("Post Annotations")
     st.subheader("Get Dataset")
 
-    col = st.columns([2, 2, 1, 1])
+    col = st.columns([3, 3, 2, 2, 2])
     with col[0]:
         username = st.text_input(label="Username", value="superadmin")
     with col[1]:
@@ -47,6 +47,8 @@ def post_annotations(dump_dir: str, port: int = 6161):
         iou_thres = st.text_input(label="IoU Threshold", value="0.5")
     with col[3]:
         task_id = st.text_input(label="Task Id", value="39")
+    with col[4]:
+        with_embd = st.selectbox(label="With Embedding", options=["True", "False"])
 
     # init dataset directory
     dataset_dir = os.path.join(dump_dir, task_id)
@@ -88,6 +90,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             fileformat="COCO 1.0",
             filename=f"{task_id}.zip",
             extract=True,
+            remove_zip=True,
             to_fiftyone=True
         )
         st.success(f"Download Dataset Task {task_id}")
@@ -100,19 +103,38 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
         st.success("Apply NMS")
 
-        # load datasset to fiftyone
-        st.session_state.dataset = fiftyone51.load_fiftyone(
-            dataset_name=task_id,
-            dataset_dir=dataset_dir,
-            delete_existing=True,
-            url='http://192.168.103.67:6001/compute'
-        )
-        st.success("Load dataset to FiftyOne")
+        if with_embd == "True":
+            # load datasset to fiftyone
+            st.session_state.dataset = fiftyone51.load_fiftyone(
+                dataset_name=task_id,
+                dataset_dir=dataset_dir,
+                delete_existing=True,
+                url='http://192.168.103.67:6001/compute'
+            )
+            st.success("Load dataset to FiftyOne")
+        else:
+            # preview to fiftyone
+            st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
+                dataset_name=task_id,
+                dataset_dir=dataset_dir,
+                delete_existing=True,
+                is_patches=False,
+                port=port,
+            )
+
+    def open_new_tab(url):
+        js = f"window.open('{url}')"
+        html = '<img src onerror="{}">'.format(js)
+        div = Div(text=html)
+        st.bokeh_chart(div)
     
     if save_tags_btn:
         # save patches tags
-        patches = st.session_state.dataset.to_patches('ground_truth')
-        st.session_state.tags = fiftyone51.get_tags(patches=patches)
+        if with_embd:
+            patches = st.session_state.dataset.to_patches('ground_truth')
+            st.session_state.tags = fiftyone51.get_tags(patches=patches)
+        else:
+            st.session_state.tags = fiftyone51.get_tags(patches=st.session_state.patches)
 
     if convert_btn:
         # convert labels

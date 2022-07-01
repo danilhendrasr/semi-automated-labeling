@@ -9,7 +9,7 @@ from function import fiftyone51
 from function import cvat
 from function import utils
 
-def post_annotations(dump_dir: str, port: int = 6161):
+def post_annotations2(dump_dir: str, port: int = 6161):
 
     # state
     if "patches" not in st.session_state:

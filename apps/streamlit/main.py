@@ -4,6 +4,7 @@ from page.model_deployment import model_deployment
 from page.post_annotations import post_annotations
 from page.dataset_versioning import dataset_versioning
 from page.dataset_quality import dataset_quality
+from page.dataset_upload import dataset_upload
 
 import streamlit as st
 from streamlit_option_menu import option_menu
@@ -14,6 +15,7 @@ with st.sidebar:
         [
             "Model Registry",
             "Model Deployment",
+            "Dataset Uploader",
             "Dataset Splitter",
             "Dataset Quality",
             "Label Evaluator",
@@ -30,6 +32,11 @@ if menu == "Model Registry":
 if menu == "Model Deployment":
     model_deployment(
         dump_dir="/home/intern-didir/Repository/labelling/apps/cvat/serverless"
+    )
+
+if menu == "Dataset Uploader":
+    dataset_upload(
+        page_key=99
     )
 
 if menu == "Dataset Splitter":

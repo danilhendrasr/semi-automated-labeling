@@ -76,7 +76,7 @@ def preview_fiftyone(
         return dataset, gt_patches
     else:
         session.view = None
-        return dataset
+        return dataset, None
 
 
 def load_fiftyone(
