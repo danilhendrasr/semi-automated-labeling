@@ -11,8 +11,8 @@ from zipfile import ZipFile
 import git
 import requests
 
-# from function.dvc import DVC
-from dvc import DVC
+from function.dvc import DVC
+# from dvc import DVC
 
 
 class RemoteRepoOptions(TypedDict):
