@@ -28,7 +28,8 @@ def export_dataset_fiftyone(section_key: str):
             label="Task Id", value="28", key=f"{section_key}_export_dataset_51"
         )
 
-    btn = st.button(label="Fiftyone Preview", key=f"{section_key}_export_dataset_51")
+    btn = st.button(label="Fiftyone Preview",
+                    key=f"{section_key}_export_dataset_51")
 
     return [username, password, iou_thres, task_id, btn]
 
@@ -67,6 +68,7 @@ def export_dataset(section_key: str):
             key=f"{section_key}_export_dataset",
         )
 
-    btn = st.button(label="Download Dataset", key=f"{section_key}_export_dataset")
+    btn = st.button(label="Download Dataset",
+                    key=f"{section_key}_export_dataset")
 
     return [username, password, filename, task_id, format, btn]

@@ -15,7 +15,7 @@ with st.sidebar:
         [
             "Model Registry",
             "Model Deployment",
-            "Dataset Uploader",
+            "Dataset Upload",
             "Dataset Splitter",
             "Dataset Quality",
             "Label Evaluator",
@@ -34,16 +34,14 @@ if menu == "Model Deployment":
         dump_dir="/home/intern-didir/Repository/labelling/apps/cvat/serverless"
     )
 
-if menu == "Dataset Uploader":
-    dataset_upload(
-        page_key=99
-    )
+if menu == "Dataset Upload":
+    dataset_upload(page_key="Dataset Upload")
 
 if menu == "Dataset Splitter":
     dataset_splitter(
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
-    
+
 if menu == "Dataset Quality":
     dataset_quality(
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
@@ -51,7 +49,7 @@ if menu == "Dataset Quality":
 
 if menu == "Label Evaluator":
     post_annotations(
-        dump_dir="./dump", 
+        dump_dir="./dump",
         port=6161
     )
 
