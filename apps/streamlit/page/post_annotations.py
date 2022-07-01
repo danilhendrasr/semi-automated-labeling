@@ -55,7 +55,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
 
     col1 = st.columns([2, 2, 1, 1])
     with col1[0]:
-        btn = st.button(label="Preview in FiftyOne")
+        btn = st.button(label="View Embedding")
     with col1[1]:
         save_tags_btn = st.button(label="Save Tags")
 
@@ -122,11 +122,13 @@ def post_annotations(dump_dir: str, port: int = 6161):
                 port=port,
             )
 
-    def open_new_tab(url):
-        js = f"window.open('{url}')"
-        html = '<img src onerror="{}">'.format(js)
-        div = Div(text=html)
-        st.bokeh_chart(div)
+        def open_new_tab(url):
+            js = f"window.open('{url}')"
+            html = '<img src onerror="{}">'.format(js)
+            div = Div(text=html)
+            st.bokeh_chart(div)
+
+        open_new_tab(f'http://192.168.103.67:6001/embedding/{task_id}')
     
     if save_tags_btn:
         # save patches tags
