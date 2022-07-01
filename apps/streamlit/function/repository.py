@@ -168,7 +168,7 @@ class Repository:
 
         return response.json()['id']
 
-    def create_release(self, title: str, desc: str, tag: str, with_commit: bool = False):
+    def create_release(self, title: str, desc: str, tag: str, branch: str = "main", with_commit: bool = True):
         """ create release assets from tag (target) """
 
         if with_commit:
@@ -185,7 +185,7 @@ class Repository:
 
         release_dict = {
             "tag_name": tag,
-            "target_commitish": "main", # self.ref
+            "target_commitish": branch, # self.ref
             "name": title,
             "body": desc,
             "draft": False,
