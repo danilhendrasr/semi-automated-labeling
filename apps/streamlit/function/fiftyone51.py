@@ -341,7 +341,8 @@ class Splitter:
 
     def split(self):
         """export split dataset to directory"""
-        shutil.rmtree(self.export_dir)
+        if os.path.isdir(self.export_dir):
+            shutil.rmtree(self.export_dir)
         self.dataset.export(
             export_dir=self.export_dir, 
             dataset_type=fo.types.COCODetectionDataset

@@ -78,14 +78,14 @@ def post_annotations(dump_dir: str, port: int = 6161):
     send_to_cvat_btn = st.button(label="Send Back to CVAT")
 
     if btn:
-        if 'cvat_dataset' not in st.session_state:
-            # initiate dataset
-            st.session_state.cvat_dataset = cvat.CVAT(
-                username=username,
-                password=password,
-                host="http://192.168.103.67:8080",
-                dump_dir=dump_dir,
-            )
+        # if 'cvat_dataset' not in st.session_state:
+        # initiate dataset
+        st.session_state.cvat_dataset = cvat.CVAT(
+            username=username,
+            password=password,
+            host="http://192.168.103.67:8080",
+            dump_dir=dump_dir,
+        )
         # download dataset
         st.session_state.cvat_dataset.tasks_dump(
             task_id=task_id,
@@ -120,7 +120,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
                 dataset_name=task_id,
                 dataset_dir=dataset_dir,
                 delete_existing=True,
-                is_patches=False,
+                is_patches=True,
                 port=port,
             )
 

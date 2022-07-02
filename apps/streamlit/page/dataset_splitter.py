@@ -17,8 +17,6 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
         st.session_state.cvat = None
     if "splitter" not in st.session_state:
         st.session_state.splitter = None
-    # if "classes" not in st.session_state:
-    #     st.session_state.classes = None
 
     st.header("Dataset Splitter")
     st.subheader("Split Dataset")
@@ -41,13 +39,11 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
 
     col_btn = st.columns([2, 2, 3])
     with col_btn[0]:
-        get_info_btn = st.button(label="Get Info")
-    with col_btn[1]:
         split_btn = st.button(label="Split Dataset")
-    with col_btn[2]:
+    with col_btn[1]:
         send_btn = st.button(label="Send to CVAT")
 
-    if get_info_btn:
+    if split_btn:
         # initalize CVAT
         st.session_state.cvat = CVAT(
             username=username,
@@ -80,20 +76,17 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
         with col2[1]:
             st.metric(label="Total GT Images", value=gt)
 
-    if split_btn:
+    if send_btn:
         # split dataset
         st.session_state.splitter.split()
         st.success("Success Split Dataset")
-
-    if send_btn:
-        """send to cvat"""
         # get labels classes
         labels_json = json.load(open(os.path.join(dump_dir, f"{task_id}_gt", "labels.json"), "r"))
-        classes = [data for data in labels_json['categories']]
+        classes = [data for data in labels_json['categories'] if data['id'] != 0]
         images = sorted(glob(os.path.join(dump_dir, f"{task_id}_gt", "data", "*")))
 
         st.session_state.cvat.tasks_create(
-            name=f"Ground Truth #{task_id}",
+            name=f"Split_{percentage}%_From_#{task_id}",
             labels=classes,
             resource_type="local",
             resources=images
