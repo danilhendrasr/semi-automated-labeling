@@ -4,6 +4,7 @@ Page for model serving
 
 import streamlit as st
 import os
+from function.dvc import DVC
 from function.repository import Repository
 
 def model_registry(page_key: str = 'model_registry'):
@@ -56,27 +57,30 @@ def model_registry(page_key: str = 'model_registry'):
         repo = Repository(repo_url=url, ref=branch, token=token)
         # clone repo
         repo.clone(force=True)
-        st.success(f'Success Clone Repository {url.split("/")[3:5]}')
+        st.success(f'Success Clone Repository {"/".join(url.split("/")[3:5])}')
+
+        # init DVC
+        dvc = DVC(path=repo.repo_dir)
+        weights_dir = os.path.join(repo.repo_dir, 'weights')
+        os.makedirs(weights_dir) if not os.path.exists(weights_dir) else None
 
         # create release.txt
         # actually dummy file for purpose git able to commit
         with open(os.path.join(repo.repo_dir, 'release.txt'), 'w') as f:
             f.write(desc)
-            
-        try:
-            # create release
-            repo.create_release(title=title, desc=desc, tag=tag, branch=branch, with_commit=True)
-            release_id = repo.get_release(tag=tag)
-            st.success(f'Create release {tag} with id {release_id}')
-        except:
-            # if fail, get existing release id
-            release_id = repo.get_release(tag=tag)
-            st.success(f'Found release {tag} with id {release_id}')
-        
+                    
         for asset in assets:
             filename = asset.name
-            with open(os.path.join(repo.repo_dir, filename), 'wb') as f:
+            with open(os.path.join(weights_dir, filename), 'wb') as f:
                 f.write((asset).getbuffer())
-                
-            repo.upload_assets(filename=filename, release_id=release_id)
-            st.success(f'Success Releasing Asset {filename}')
+
+            # add file to dvc
+            dvc.add(item=weights_dir)
+            st.success(f"Success add {filename} to dvc")
+
+        repo.create_release(title=title, desc=desc, tag=tag, branch=branch, with_commit=True)
+        release_id = repo.get_release(tag=tag)
+        st.success(f'Create release {tag} with id {release_id}')
+
+        dvc.push()
+        st.success(f'Success push {filename} to dvc')

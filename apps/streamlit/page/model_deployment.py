@@ -4,8 +4,8 @@ Page for model deployment
 
 import streamlit as st
 import os
+from function.dvc import DVC
 
-from section import repository
 from function.repository import Repository
 from function import cvat
 from function import utils
@@ -47,6 +47,10 @@ def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getc
         repo.clone(force=True)
         st.success(f'Success Clone Repository {"/".join(url.split("/")[3:5])}')
         utils.change_model_tag(repo_dir=repo.repo_dir, repo_url=url, tag=ref)
+
+        # pull model from cloud storage
+        dvc = DVC(path=repo.repo_dir)
+        dvc.pull()
 
         # deploy model
         cvat.deploy_model(repo_dir=repo.repo_dir, serverless_dir=dump_dir)

@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 from pprint import pprint
 from typing import TypedDict
+from zipfile import ZipFile
 import git
 import requests
 
@@ -168,40 +169,6 @@ class Repository:
 
         return response.json()['id']
 
-    def create_release(self, title: str, desc: str, tag: str, branch: str = "main", with_commit: bool = True):
-        """ create release assets from tag (target) """
-
-        if with_commit:
-            repo = git.Repo(self.repo_dir)
-
-            # commit all files
-            try: 
-                repo.git.add(all=True)
-                repo.git.commit('-m', f'Version {tag}')
-                repo.remotes.origin.push()
-            except Exception as e:
-                print(e)
-                sys.exit(1)
-
-        release_dict = {
-            "tag_name": tag,
-            "target_commitish": branch, # self.ref
-            "name": title,
-            "body": desc,
-            "draft": False,
-            "prerelease": False,
-            "generate_release_notes": True
-        }
-
-        response = requests.post(
-            url=f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases',
-            headers=self.headers,
-            data=json.dumps(release_dict)
-        )
-
-        print(response)
-        print(f'[INFO] Success release {tag} with release id {response.json()["id"]}')
-
     def delete_release(self, release_id: str):
         """ Delete release by release id """
         response = requests.delete(
@@ -212,38 +179,129 @@ class Repository:
         print(response)
         print(f'[INFO] Success deleted release {release_id}')
 
-    def upload_assets(self, filename: str, release_id: str):
-        """ upload assets to release assets """
-        file_path = os.path.join(self.repo_dir, filename)
-        assets_dict = {
-            "name": open(file_path, 'rb')
+    def create_release(self, title: str, desc: str, tag: str, branch: str = "main", with_commit: bool = True):
+        """Create release"""
+        if with_commit:
+            repo = git.Repo(self.repo_dir)
+            try: 
+                repo.git.add(all=True)
+                repo.git.commit('-m', f'Version {tag}')
+                repo.remotes.origin.push()
+            except Exception as e:
+                print(e)
+                sys.exit(1)
+
+        url = f"https://api.github.com/repos/{self.username}/{self.repo_name}/releases"
+        payload = {
+            "tag_name": tag,
+            "target_commitish": branch,
+            "name": title,
+            "body": desc,
+            "draft": False,
+            "prerelease": False,
+            "generate_release_notes": True,
         }
+        print("[INFO] Creating release {}".format(tag))
+        response = requests.post(url, json=payload, headers=self.headers)
+        print("[INFO] Release created id: {}".format(response.json()["id"]))
 
-        response = requests.post(
-            url=f'https://uploads.github.com/repos/{self.username}/{self.repo_name}/releases/{release_id}/assets?name={filename}',
-            headers=self.headers,
-            files=assets_dict
-        )
+        return response.json()
 
-        print(response)
-        print(f'[INFO] Success upload {filename}')
+    def upload_assets(self, assets, release_id):
+        """Post assets to release"""
+        for asset in assets:
+            asset_path = os.path.join(os.getcwd(), asset)
+            with ZipFile(f"{asset_path}.zip", "w") as zip_file:
+                zip_file.write(asset)
+            asset_path = f"{asset_path}.zip"
+            filename = asset_path.split("/")[-1]
+            url = (
+                f"https://uploads.github.com/repos/{self.username}/{self.repo_name}/releases/"
+                + str(release_id)
+                + f"/assets?name={filename}"
+            )
+            print("[INFO] Uploading {}".format(filename))
+            response = requests.post(url, files={"name": open(asset_path, "rb")}, headers=self.headers)
+            pprint(response.json())
+
+    def get_assets(self, tag: str = None):
+        """Get release assets by tag name"""
+        tag = self.ref if tag == None else tag
+        url = f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/tags/' + tag
+        response = requests.get(url, headers=self.headers)
+        return response.json()['assets']
+
+    def download_assets(self, assets: list[dict]):
+        """Download private assets from github release"""
+        for asset in assets:
+            url = f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/assets/' + str(asset['id'])
+            response = requests.get(url, headers=self.headers)
+            pprint(response.json())
+            filename = asset['name']
+            with open(os.path.join(self.repo_dir, filename), 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+            del response
+            with ZipFile(os.path.join(self.repo_dir, filename), 'r') as zip_file:
+                zip_file.extractall(self.repo_dir)
+            os.remove(os.path.join(self.repo_dir, filename)) # remove zip
+            
+            print(f"[INFO] Downloaded {filename}")
+
+    def download_assets2(self, assets):
+        """Download assets to repo directory"""
+        for asset in assets:
+            url = asset['browser_download_url']
+            filename = asset['name']
+            print('[INFO] Downloading {}'.format(filename))
+            response = requests.get(url, headers=self.headers, stream=True)
+            pprint(response)
+            with open(os.path.join(self.repo_dir, filename), 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+            del response
+
+            with ZipFile(os.path.join(self.repo_dir, filename), 'r') as zip_file:
+                zip_file.extractall(self.repo_dir)
+            os.remove(os.path.join(self.repo_dir, filename)) # remove zip
 
 
 if __name__ == '__main__':
 
     repository = Repository(
-        repo_url='https://github.com/ruhyadi/dataset-registry-002',
-        ref='v1.2',
-        token='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',
+        repo_url='https://github.com/ruhyadi/yolov5-nodeflux',
+        ref='v7.0.1',
+        token='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',
         dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
     )
 
+    # repository = Repository(
+    #     repo_url='https://github.com/ruhyadi/yolo3d-lightning',
+    #     ref='v0.1',
+    #     token='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',
+    #     dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
+    # )
+
+    # repository.create_release(
+    #     title='v7.0.2',
+    #     desc='v7.0.2',
+    #     tag='v7.0.2',
+    #     branch='main',
+    #     with_commit=False
+    # )
+
+    # repository.upload_assets(
+    #     assets=['/home/intern-didir/Repository/labelling/apps/streamlit/dump/yolov5s.pt'],
+    #     release_id=repository.get_release('v7.0.2')
+    # )
+
+    assets = repository.get_assets()
+    repository.download_assets2(assets)
+
     # repository.clone(force=True)
 
-    repository.checkout('main')
-    repository.create_release(
-        title='title', desc='desc', tag='v1.2.1', with_commit=True
-    )
+    # repository.checkout('main')
+    # repository.create_release(
+    #     title='title', desc='desc', tag='v1.2.1', with_commit=True
+    # )
 
     # repository.checkout()
 
