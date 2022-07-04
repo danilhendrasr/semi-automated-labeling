@@ -19,7 +19,11 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
         st.session_state.splitter = None
 
     st.header("Dataset Splitter")
-    st.subheader("Split Dataset")
+    st.write("Feature Dataset Splitter berfungsi untuk mem-split Task besar \
+        menjadi Task yang lebih kecil. Salah satu fungsi kongkrit dari fitur ini dapat \
+        digunakan untuk mem-split Task Prediction menjadi Task Ground-Truth.")
+
+    st.subheader("CVAT Authentications")
 
     col0 = st.columns([2, 2])
     with col0[0]:
@@ -31,6 +35,7 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
             label="Password", value="KECILSEMUA", key=f"{page_key}", type="password"
         )
 
+    st.subheader("Dataset Split Parameters")
     col1 = st.columns([2, 2, 3])
     with col1[0]:
         task_id = st.text_input(label="Task ID", value="52", key=f"{page_key}")
@@ -72,23 +77,23 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
         preds, gt = st.session_state.splitter.get_info()
         col2 = st.columns([2, 2, 2])
         with col2[0]:
-            st.metric(label="Total Preds Images", value=preds)
+            st.metric(label=f"Total Task #{task_id} Images", value=preds)
         with col2[1]:
-            st.metric(label="Total GT Images", value=gt)
+            st.metric(label="Total New Task Images", value=gt)
 
     if send_btn:
         # split dataset
         st.session_state.splitter.split()
-        st.success("Success Split Dataset")
+        st.success(f"Success Split Dataset to {percentage}%")
         # get labels classes
         labels_json = json.load(open(os.path.join(dump_dir, f"{task_id}_gt", "labels.json"), "r"))
         classes = [data for data in labels_json['categories'] if data['id'] != 0]
         images = sorted(glob(os.path.join(dump_dir, f"{task_id}_gt", "data", "*")))
 
-        st.session_state.cvat.tasks_create(
+        created_id = st.session_state.cvat.tasks_create(
             name=f"Split_{percentage}%_From_#{task_id}",
             labels=classes,
             resource_type="local",
             resources=images
         )
-        st.success("Success Upload Dataset to CVAT")
+        st.success(f"Success Upload Dataset to CVAT on Task {created_id}")

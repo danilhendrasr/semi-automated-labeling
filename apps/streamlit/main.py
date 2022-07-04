@@ -31,7 +31,7 @@ if menu == "Model Registry":
 
 if menu == "Model Deployment":
     model_deployment(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/cvat/serverless"
+        dump_dir="./dump"
     )
 
 if menu == "Dataset Upload":
@@ -39,21 +39,22 @@ if menu == "Dataset Upload":
 
 if menu == "Dataset Splitter":
     dataset_splitter(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
+        dump_dir="./dump"
     )
 
 if menu == "Dataset Quality":
     dataset_quality(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
+        dump_dir="./dump",
+        port=7101,
     )
 
 if menu == "Label Evaluator":
     post_annotations(
         dump_dir="./dump",
-        port=6161
+        port=7101,
     )
 
 if menu == "Dataset Versioning":
     dataset_versioning(
-        dump_dir="/home/intern-didir/Repository/labelling/apps/streamlit/dump"
+        dump_dir="./dump"
     )

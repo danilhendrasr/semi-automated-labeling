@@ -65,10 +65,10 @@ class Validac:
         """Validac dataset gt with dataset prediction"""
         return self.results.mAP()
 
-    def preview_evaluation(self):
+    def preview_evaluation(self, port):
         """validate dataset with COCO"""
         dataset_eval = self.dataset_gt.to_evaluation_patches("eval")
-        fo.launch_app(dataset=dataset_eval, address="0.0.0.0", port=6161)
+        fo.launch_app(dataset=dataset_eval, address="0.0.0.0", port=port)
         return dataset_eval
 
     def confusion_matrix(self):
