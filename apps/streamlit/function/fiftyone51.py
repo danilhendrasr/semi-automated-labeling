@@ -273,6 +273,8 @@ def convert_format(dataset_dir: str, format: str):
     shutil.rmtree(dump_dataset)
     shutil.rmtree(os.path.join(dataset_dir, "annotations"))
 
+    dataset.delete()
+
     print("[INFO] Success convert to FiftyOne CVAT Format")
 
 def merging_dataset(format: str, repo_dir: str):
