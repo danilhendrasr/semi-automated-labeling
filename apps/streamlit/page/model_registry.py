@@ -7,7 +7,7 @@ import os
 from function.dvc import DVC
 from function.repository import Repository
 
-def model_registry(page_key: str = 'model_registry'):
+def model_registry(page_key: str = 'model_registry', dump_dir: str = None):
     """ page for model registry """
     st.header('Model Registry')
 
@@ -54,7 +54,7 @@ def model_registry(page_key: str = 'model_registry'):
     release_btn = st.button(label='Release Assets', key=page_key)
 
     if release_btn:
-        repo = Repository(repo_url=url, ref=branch, token=token)
+        repo = Repository(repo_url=url, ref=branch, token=token, dump_dir=dump_dir)
         # clone repo
         repo.clone(force=True)
         st.success(f'Success Clone Repository {"/".join(url.split("/")[3:5])}')
