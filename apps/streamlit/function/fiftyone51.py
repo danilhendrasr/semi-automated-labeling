@@ -266,7 +266,10 @@ def convert_format(dataset_dir: str, format: str):
     dst = os.path.join(dump_dataset, "labels.json")
     os.rename(src, dst)
 
-    dataset = fo.Dataset.from_dir(dump_dataset, fo.types.COCODetectionDataset)
+    dataset = fo.Dataset.from_dir(
+        dataset_dir=dump_dataset, 
+        dataset_type=fo.types.COCODetectionDataset
+        )
     # export dataset with fiftyone format
     dataset.export(dataset_dir, dataset_type)
     # delete old dataset
