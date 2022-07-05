@@ -19,6 +19,7 @@ class DVC:
 
     def setup_remote_credentials(self):
         """ Set up local dvc credentials needed to interact with remote storage """
+        print(f"asd fasd {azure_account_name}")
         os.chdir(self.repo_dir)
         os.system(f"dvc remote modify --local main account_name '{azure_account_name}' \
                 && dvc remote modify --local main account_key '{azure_access_key}' ")

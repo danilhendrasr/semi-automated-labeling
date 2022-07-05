@@ -112,7 +112,7 @@ class CVAT:
         dataset_repository_url="",
         lfs=False,
         **kwargs,
-    ):
+    ) -> str:
         """Create a new task with the given name and labels JSON and
         add the files to it.
 
@@ -197,6 +197,8 @@ class CVAT:
             log.info(
                 f"Dataset repository creation completed with status: {response_json['status']}."
             )
+
+        return task_id
 
     def tasks_delete(self, task_ids, **kwargs):
         """Delete a list of tasks, ignoring those which don't exist."""

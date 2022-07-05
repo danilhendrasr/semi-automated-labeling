@@ -1,7 +1,8 @@
 import os
 import zipfile
+from fsutil import is_dir
 import streamlit as st
-import section
+import shutil
 
 from function.repository import Repository
 from function.cvat import CVAT
@@ -12,17 +13,54 @@ def dataset_upload(page_key: int):
     """ Code for dataset upload page """
 
     st.header("Dataset Upload")
-    repo_url, gh_token, ref = section.repository.clone(
-        section_key=f'{page_key} repository')
+
+    st.subheader("Repository Creation")
+    cols = st.columns([3, 2, 1, 1])
+    with cols[0]:
+        repo_url = st.text_input(
+            label="Repository URL \n (a new repo will be created in this URL)", placeholder="https://github.com/username/repository")
+
+    with cols[1]:
+        gh_token = st.text_input(
+            label='Personal Access Token',
+            value='xxx',
+            type='password')
+
+    with cols[2]:
+        branch = st.text_input(
+            label='Branch',
+            value='main')
+
+    with cols[3]:
+        tag = st.text_input(
+            label='Tag',
+            value='v0')
+
     file_upload = st.file_uploader(accept_multiple_files=False,
                                    label="Dataset File", type="zip")
-    upload_btn = st.button(label="Upload")
+    st.header("CVAT Configuration")
 
-    branch, tag = ref.split("/")
+    col0 = st.columns([2, 2])
+    with col0[0]:
+        cvat_username = st.text_input(
+            label="Username", value="superadmin", key=f"{page_key}_versioning"
+        )
+    with col0[1]:
+        cvat_password = st.text_input(
+            label="Password",
+            value="KECILSEMUA",
+            key=f"{page_key}_versioning",
+            type="password",
+        )
+
+    cvat_task_name = st.text_input(
+        label="Task Name", placeholder="CVAT Task Name")
+
+    upload_btn = st.button(label="Upload")
 
     if upload_btn:
         if repo_url is None:
-            st.write("Repo empty")
+            st.error("Repository name cannot be empty")
 
         if file_upload is not None:
             with st.spinner("Processing..."):
@@ -36,9 +74,17 @@ def dataset_upload(page_key: int):
                                       "private": True
                                   })
 
+                if not repo.successfuly_created:
+                    st.error(
+                        "Failed creating repo, please retry in a few minutes.")
+                    return
+
                 repo_dir = repo.repo_dir
                 data_dir = f"{repo_dir}/dataset"
-                os.mkdir(data_dir)
+                if not os.path.exists(data_dir):
+                    # shutil.rmtree(data_dir)
+                    os.makedirs(data_dir)
+
                 file = open(f'{data_dir}/data.zip', 'wb')
                 file.write(bytes_data)
                 file.close()
@@ -48,24 +94,37 @@ def dataset_upload(page_key: int):
                     zip_obj.extractall(path=data_dir)
                     os.remove(f"{data_dir}/data.zip")
 
-                    # repo.commit(git_items=[".gitignore", "dataset.dvc"],
-                    #             dvc_items=["dataset"],
-                    #             message="initial dataset version")
-                    # repo.tag(tag, False)
-                    # repo.push()
+                    files_to_push = []
+                    # Remove files with extensions other than .jpg, .jpeg, or .png
+                    for x in os.listdir(data_dir):
+                        filename = x.lower()
+                        if filename.endswith(".jpg") or filename.endswith(".jpeg") or filename.endswith(".png"):
+                            files_to_push.append(f"{data_dir}/{filename}")
+                        else:
+                            target = f"{data_dir}/{filename}"
+                            if is_dir(target):
+                                os.removedirs(target)
+                            else:
+                                os.remove(target)
 
+                    if len(files_to_push) == 0:
+                        st.error("Cannot upload empty dataset")
+                        return
+
+                    repo.commit(git_items=[".gitignore", "dataset.dvc"],
+                                dvc_items=["dataset"],
+                                message="initial dataset version")
+                    repo.tag(tag, False)
+                    repo.push()
+
+                    cvat_host = "http://192.168.103.67:8080"
                     if 'cvat_dataset' not in st.session_state:
-                        st.session_state.cvat_dataset = CVAT(username="superadmin", password="KECILSEMUA",
-                                                             host="http://192.168.103.67:8080/", dump_dir="/workspaces/semi-automated-labeling/dump")
+                        st.session_state.cvat_dataset = CVAT(
+                            username=cvat_username, password=cvat_password, host=cvat_host, dump_dir="/tmp/dataset-upload/dump")
 
-                    print(st.session_state.cvat_dataset.tasks_list())
-                    st.session_state.cvat_dataset.tasks_create(name="Heytayo", labels=[{"name": "Tayo"}, {"name": "Oyatt"}], resource_type="local", resources=[
-                                                               "/workspaces/semi-automated-labeling/apps/streamlit/test_dataset/Bengal_197.jpg"])
-                    # st.session_state.cvat_dataset.tasks_upload(
-                    #     task_id=45,
-                    #     fileformat="COCO 1.0",
-                    #     filename=os.path.join(dataset_dir, "labels_new.json")
-                    # )
+                    new_task_id = st.session_state.cvat_dataset.tasks_create(name=cvat_task_name, labels=[
+                        {"name": "Dummy"}], resource_type="local", resources=files_to_push)
 
+                    new_task_url = f"{cvat_host}/{new_task_id}"
                     st.success(
-                        f"Success, dataset repository can be accessed at {repo_url}")
+                        f"Success, dataset repository can be accessed at {repo_url} and CVAT task can be accessed at {new_task_url}")

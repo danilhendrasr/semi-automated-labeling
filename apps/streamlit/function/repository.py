@@ -1,5 +1,6 @@
 """ Repository class """
 
+from operator import contains
 import sys
 import os
 import json
@@ -36,6 +37,7 @@ class Repository:
     ):
         self.ref = ref
         self.token = token
+        self.successfuly_created = True
 
         self.username = repo_url.split('/')[3]
         self.repo_name = repo_url.split('/')[4]
@@ -65,22 +67,27 @@ class Repository:
                 data=json.dumps(init_dict)
             )
 
+            repo_dir = self.clone()
+            self.dvc = DVC(repo_dir)
             if str(response) == '<Response [201]>':
                 print(response)
-                repo_dir = self.clone()
                 if self.with_dvc:
-                    self.dvc = DVC(repo_dir)
                     self.commit(
                         git_items=[".dvc", ".dvcignore"], message="init dvc")
                     self.push()
 
                 print(
                     f'[INFO] Success initializing repo {self.username}/{self.repo_name}')
+            elif "422" in str(response):
+                print(
+                    f'[INFO] Success initializing repo {self.username}/{self.repo_name}')
             else:
-                print(response)
-                pprint(
-                    f'[ERROR] Failed initializing repo {self.username}/{self.repo_name}')
-                pprint(response.json())
+                self.successfuly_created = False
+
+    def init(self, description, private=True):
+        """ Initalize remote repo """
+
+        pass
 
     def clone(self, force: bool = True):
         """ Clone from repository url """
@@ -175,7 +182,7 @@ class Repository:
             repo = git.Repo(self.repo_dir)
 
             # commit all files
-            try: 
+            try:
                 repo.git.add(all=True)
                 repo.git.commit('-m', f'Version {tag}')
                 repo.remotes.origin.push()
@@ -185,7 +192,7 @@ class Repository:
 
         release_dict = {
             "tag_name": tag,
-            "target_commitish": "main", # self.ref
+            "target_commitish": "main",  # self.ref
             "name": title,
             "body": desc,
             "draft": False,
@@ -200,7 +207,8 @@ class Repository:
         )
 
         print(response)
-        print(f'[INFO] Success release {tag} with release id {response.json()["id"]}')
+        print(
+            f'[INFO] Success release {tag} with release id {response.json()["id"]}')
 
     def delete_release(self, release_id: str):
         """ Delete release by release id """
@@ -212,11 +220,27 @@ class Repository:
         print(response)
         print(f'[INFO] Success deleted release {release_id}')
 
-    def upload_assets(self, filename: str, release_id: str):
-        """ upload assets to release assets """
-        file_path = os.path.join(self.repo_dir, filename)
-        assets_dict = {
-            "name": open(file_path, 'rb')
+    def create_release(self, title: str, desc: str, tag: str, branch: str = "main", with_commit: bool = True):
+        """Create release"""
+        if with_commit:
+            repo = git.Repo(self.repo_dir)
+            try:
+                repo.git.add(all=True)
+                repo.git.commit('-m', f'Version {tag}')
+                repo.remotes.origin.push()
+            except Exception as e:
+                print(e)
+                sys.exit(1)
+
+        url = f"https://api.github.com/repos/{self.username}/{self.repo_name}/releases"
+        payload = {
+            "tag_name": tag,
+            "target_commitish": branch,
+            "name": title,
+            "body": desc,
+            "draft": False,
+            "prerelease": False,
+            "generate_release_notes": True,
         }
 
         response = requests.post(
@@ -225,8 +249,63 @@ class Repository:
             files=assets_dict
         )
 
-        print(response)
-        print(f'[INFO] Success upload {filename}')
+    def upload_assets(self, assets, release_id):
+        """Post assets to release"""
+        for asset in assets:
+            asset_path = os.path.join(os.getcwd(), asset)
+            with ZipFile(f"{asset_path}.zip", "w") as zip_file:
+                zip_file.write(asset)
+            asset_path = f"{asset_path}.zip"
+            filename = asset_path.split("/")[-1]
+            url = (
+                f"https://uploads.github.com/repos/{self.username}/{self.repo_name}/releases/"
+                + str(release_id)
+                + f"/assets?name={filename}"
+            )
+            print("[INFO] Uploading {}".format(filename))
+            response = requests.post(
+                url, files={"name": open(asset_path, "rb")}, headers=self.headers)
+            pprint(response.json())
+
+    def get_assets(self, tag: str = None):
+        """Get release assets by tag name"""
+        tag = self.ref if tag == None else tag
+        url = f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/tags/' + tag
+        response = requests.get(url, headers=self.headers)
+        return response.json()['assets']
+
+    def download_assets(self, assets: list[dict]):
+        """Download private assets from github release"""
+        for asset in assets:
+            url = f'https://api.github.com/repos/{self.username}/{self.repo_name}/releases/assets/' + str(
+                asset['id'])
+            response = requests.get(url, headers=self.headers)
+            pprint(response.json())
+            filename = asset['name']
+            with open(os.path.join(self.repo_dir, filename), 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+            del response
+            with ZipFile(os.path.join(self.repo_dir, filename), 'r') as zip_file:
+                zip_file.extractall(self.repo_dir)
+            os.remove(os.path.join(self.repo_dir, filename))  # remove zip
+
+            print(f"[INFO] Downloaded {filename}")
+
+    def download_assets2(self, assets):
+        """Download assets to repo directory"""
+        for asset in assets:
+            url = asset['browser_download_url']
+            filename = asset['name']
+            print('[INFO] Downloading {}'.format(filename))
+            response = requests.get(url, headers=self.headers, stream=True)
+            pprint(response)
+            with open(os.path.join(self.repo_dir, filename), 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+            del response
+
+            with ZipFile(os.path.join(self.repo_dir, filename), 'r') as zip_file:
+                zip_file.extractall(self.repo_dir)
+            os.remove(os.path.join(self.repo_dir, filename))  # remove zip
 
 
 if __name__ == '__main__':
