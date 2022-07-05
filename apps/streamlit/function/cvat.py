@@ -140,6 +140,7 @@ class CVAT:
         response = self.session.post(url, json=data)
         response.raise_for_status()
         response_json = response.json()
+        created_id = response_json["id"]
         log.info("Created task ID: {id} NAME: {name}".format(**response_json))
         task_id = response_json["id"]
         self.tasks_data(task_id, resource_type, resources, **kwargs)
@@ -196,6 +197,8 @@ class CVAT:
             log.info(
                 f"Dataset repository creation completed with status: {response_json['status']}."
             )
+
+        return created_id
 
     def tasks_delete(self, task_ids, **kwargs):
         """Delete a list of tasks, ignoring those which don't exist."""

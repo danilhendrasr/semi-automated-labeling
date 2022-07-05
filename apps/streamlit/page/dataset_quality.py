@@ -7,7 +7,7 @@ from function.validac import Validac
 from function.cvat import CVAT
 
 
-def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd()):
+def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd(), port: int = 6161):
     """Dataset Quality"""
 
     # state
@@ -19,8 +19,11 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
         st.session_state.validac = None
 
     st.header("Dataset Quality")
+    st.write("Feature Dataset Quality berfungsi untuk mengevaluasi dataset predictions \
+            dengan dataset ground-truth. Metric yang digunakan dalam evaluasi adalah mAP. \
+            Hasil evaluasi juga selanjutnya dapat ditampilkan di FiftyOne.")
 
-    st.subheader("Validac")
+    st.subheader("CVAT Authentications")
     col0 = st.columns([2, 2])
     with col0[0]:
         username = st.text_input(
@@ -31,16 +34,17 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
             label="Password", value="KECILSEMUA", key=f"{page_key}", type="password"
         )
 
+    st.subheader("Evaluate Predictions Task")
     col1 = st.columns([2, 2, 2])
     with col1[0]:
         gt_id = st.text_input(
-            label="Task Ground Truth",
+            label="Task ID Dataset Ground Truth",
             value="52",
             key=f"{page_key}",
         )
     with col1[1]:
         pred_id = st.text_input(
-            label="Task Prediction",
+            label="Task ID Dataset Predictions",
             value="51",
             key=f"{page_key}",
         )
@@ -124,4 +128,4 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
 
     if preview:
         """preview evaluation to fiftyone"""
-        st.session_state.validac.preview_evaluation()
+        st.session_state.validac.preview_evaluation(port=port)

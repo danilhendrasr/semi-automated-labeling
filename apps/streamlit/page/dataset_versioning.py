@@ -147,7 +147,7 @@ def dataset_versioning(
         if is_merging == "True":
             dvc.pull()
             # rename dataset directory from dvc pull
-            os.rename(os.path.join(repo.repo_dir, "dataset"), os.path.join(repo.repo_dir, "old_dataset"))
+            os.rename(os.path.join(".", repo.repo_dir, "dataset"), os.path.join(".", repo.repo_dir, "old_dataset"))
             fiftyone51.merging_dataset(format=annot_type, repo_dir=repo.repo_dir)
             st.success(f'Success Merging {merge_ref} to {ref}')
 

@@ -43,6 +43,13 @@ class GenerateReport:
             os.makedirs(self.plot_dir)
             os.makedirs(self.example_dir)
 
+        # delete fiftyone
+        list_datasets = fo.list_datasets()
+        try:
+            [fo.delete_dataset(name) for name in list_datasets]
+        except:
+            print("[INFO] No Existing Dataset")
+
         # initiate dataset
         dataset_type = fiftyone_format(format)
         self.dataset = fo.Dataset.from_dir(
@@ -174,7 +181,7 @@ class GenerateReport:
         """Generate Plot and Report"""
         self.plot_imagebytes()
         self.plot_gtlabel()
-        self.plot_uniqueness()
+        # self.plot_uniqueness()
         self.plot_embeddings_object()
 
         self.md.new_header(level=1, title="")

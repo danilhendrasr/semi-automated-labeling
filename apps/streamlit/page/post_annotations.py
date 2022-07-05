@@ -29,38 +29,44 @@ def post_annotations(dump_dir: str, port: int = 6161):
     # get classes list
     try:
         classes = st.session_state.dataset.get_classes('ground_truth')
+        # classes = [c for c in classes if c != "0"]
     except:
         classes = []
 
-    st.header("Post Annotations")
-    st.subheader("Get Dataset")
+    st.header("Label Evaluator")
+    st.write("Feature Label Evaluator berfungsi untuk mengevaluasi label bounding-box dataset. \
+        Feature ini menggunakan FiftyOne sebagai explorer untuk mengevaluasi label bounding-box. \
+        Label yang salah dapat ditandai dan diubah menjadi label yang benar.")
+        
+    st.subheader("CVAT Authentications")
 
-    col = st.columns([3, 3, 2, 2, 2])
-    with col[0]:
+    col0 = st.columns([3, 3])
+    with col0[0]:
         username = st.text_input(label="Username", value="superadmin")
-    with col[1]:
+    with col0[1]:
         password = st.text_input(
             label="Password",
             value="KECILSEMUA",
             type="password",
         )
-    with col[2]:
-        iou_thres = st.text_input(label="IoU Threshold", value="0.5")
-    with col[3]:
-        task_id = st.text_input(label="Task Id", value="39")
-    with col[4]:
-        with_embd = st.selectbox(label="With Embedding", options=["True", "False"])
-
-    # init dataset directory
-    dataset_dir = os.path.join(dump_dir, task_id)
-
-    col1 = st.columns([2, 2, 1, 1])
+    col1 = st.columns([2, 2, 2, 2])
     with col1[0]:
-        btn = st.button(label="View Embedding")
+        task_id = st.text_input(label="Task Id", value="39")
     with col1[1]:
-        save_tags_btn = st.button(label="Save Tags")
+        iou_thres = st.text_input(label="NMS IoU Threshold", value="0.5")
+    with col1[2]:
+        with_embd = st.radio(label="With Embedding", options=["True", "False"])
 
-    st.subheader("Changes Labels")
+    col2 = st.columns([2, 2, 4])
+    with col2[0]:
+        btn = st.button(label="Preview Labels")
+    with col2[1]:
+        save_tags_btn = st.button(label="Save Label Tags")
+
+    st.subheader("Label Changer")
+    st.write("Fungsi Label Changer berfungsi untuk mengubah label dari bounding-box yang sudah ditandai (tag).")
+
+
     col2 = st.columns([2, 2, 1, 1])
     with col2[0]:
         from_tag = st.selectbox(
@@ -72,10 +78,13 @@ def post_annotations(dump_dir: str, port: int = 6161):
             label="To Label",
             options=classes
         )
-    convert_btn = st.button(label="Convert")
+    convert_btn = st.button(label="Convert Label")
 
-    st.subheader("Send Back to CVAT")
-    send_to_cvat_btn = st.button(label="Send Back to CVAT")
+    # st.subheader("Send Back to CVAT")
+    # send_to_cvat_btn = st.button(label="Send Back to CVAT")
+
+    # init dataset directory
+    dataset_dir = os.path.join(dump_dir, task_id)
 
     if btn:
         # if 'cvat_dataset' not in st.session_state:
@@ -124,17 +133,17 @@ def post_annotations(dump_dir: str, port: int = 6161):
                 port=port,
             )
 
-        def open_new_tab(url):
-            js = f"window.open('{url}')"
-            html = '<img src onerror="{}">'.format(js)
-            div = Div(text=html)
-            st.bokeh_chart(div)
+        # def open_new_tab(url):
+        #     js = f"window.open('{url}')"
+        #     html = '<img src onerror="{}">'.format(js)
+        #     div = Div(text=html)
+        #     st.bokeh_chart(div)
 
-        open_new_tab(f'http://192.168.103.67:6001/embedding/{task_id}')
+        # open_new_tab(f'http://192.168.103.67:6001/embedding/{task_id}')
 
     if save_tags_btn:
         # save patches tags
-        if with_embd:
+        if with_embd == "True":
             patches = st.session_state.dataset.to_patches('ground_truth')
             st.session_state.tags = fiftyone51.get_tags(patches=patches)
         else:
@@ -149,15 +158,13 @@ def post_annotations(dump_dir: str, port: int = 6161):
             list_tags=st.session_state.tags,
             category_id=classes
         )
-
-    if send_to_cvat_btn:
         # send back new labels to cvat
         st.session_state.cvat_dataset.tasks_upload(
             task_id=task_id,
             fileformat="COCO 1.0",
             filename=os.path.join(dataset_dir, "labels.json")
         )
-
+        st.success(f"Success Evaluate Label Task #{task_id}")
 
 if __name__ == "__main__":
     post_annotations(
