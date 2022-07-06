@@ -112,23 +112,12 @@ class CVAT:
         dataset_repository_url="",
         lfs=False,
         **kwargs,
-    ):
-        """Create a new task with the given name and labels JSON and
-        add the files to it.
-
-
-        Args:
-            name (_type_): _description_
-            labels (_type_): _description_
-            resource_type (_type_): _description_
-            resources (_type_): _description_
-            annotation_path (str, optional): _description_. Defaults to "".
-            annotation_format (str, optional): _description_. Defaults to "COCO 1.0".
-            completion_verification_period (int, optional): _description_. Defaults to 20.
-            git_completion_verification_period (int, optional): _description_. Defaults to 2.
-            dataset_repository_url (str, optional): _description_. Defaults to "".
-            lfs (bool, optional): _description_. Defaults to False.
+    ) -> str:
         """
+        Create a new task with the given name and labels JSON and
+        add the files to it.
+        """
+
         url = self.api.tasks
         labels = [] if kwargs.get("project_id") is not None else labels
         data = {"name": name, "labels": labels}
