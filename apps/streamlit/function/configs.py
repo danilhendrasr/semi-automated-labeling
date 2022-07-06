@@ -16,9 +16,9 @@ def init_git_config(username, email):
 
 def cleanup_dump_dir(dump_dir):
     """cleanup dump dir"""
+    [fo.delete_dataset(name) for name in fo.list_datasets()]
+    print("[INFO] All fiftyone datasets deleted.")
     shutil.rmtree(dump_dir)
     print("[INFO] Dump directory cleaned")
     os.makedirs(dump_dir)
     print("[INFO] Dump directory recreated")
-    [fo.delete_dataset(name) for name in fo.list_datasets()]
-    print("[INFO] All fiftyone datasets deleted.")
