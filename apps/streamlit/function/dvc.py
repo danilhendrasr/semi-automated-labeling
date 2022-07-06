@@ -13,28 +13,25 @@ class DVC:
     def __init__(self, path: str) -> None:
         self.repo_dir = path
         if not os.path.isdir(f"{self.repo_dir}/.dvc"):
-            os.chdir(self.repo_dir)
-            os.system("dvc init && dvc remote add -d main azure://dataset-upload")
+            os.system(
+                f"cd {self.repo_dir} && dvc init && dvc remote add -d main azure://dataset-upload")
             self.setup_remote_credentials()
 
     def setup_remote_credentials(self):
         """ Set up local dvc credentials needed to interact with remote storage """
-        os.chdir(self.repo_dir)
-        os.system(f"dvc remote modify --local main account_name '{azure_account_name}' \
-                && dvc remote modify --local main account_key '{azure_access_key}' ")
+        os.system(f"cd {self.repo_dir} \
+            && dvc remote modify --local main account_name '{azure_account_name}' \
+            && dvc remote modify --local main account_key '{azure_access_key}' ")
 
     def pull(self):
         """ Pull dataset """
-        os.chdir(self.repo_dir)
-        os.system("dvc pull")
+        os.system(f"cd {self.repo_dir} && dvc pull")
 
     def add(self, item: str):
         """ Add item to DVC tracking """
-        os.chdir(self.repo_dir)
-        os.system("dvc config core.autostage true")
-        os.system(f"dvc add {item}")
+        os.system(
+            f"cd {self.repo_dir} && dvc config core.autostage true && dvc add {item}")
 
     def push(self):
         """ Push dataset to remote storage """
-        os.chdir(self.repo_dir)
-        os.system("dvc push")
+        os.system(f"cd {self.repo_dir} && dvc push")
