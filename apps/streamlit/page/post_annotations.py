@@ -37,18 +37,9 @@ def post_annotations(dump_dir: str, port: int = 6161):
     st.write("Feature Label Evaluator berfungsi untuk mengevaluasi label bounding-box dataset. \
         Feature ini menggunakan FiftyOne sebagai explorer untuk mengevaluasi label bounding-box. \
         Label yang salah dapat ditandai dan diubah menjadi label yang benar.")
-        
+
     st.subheader("CVAT Authentications")
 
-    col0 = st.columns([3, 3])
-    with col0[0]:
-        username = st.text_input(label="Username", value="superadmin")
-    with col0[1]:
-        password = st.text_input(
-            label="Password",
-            value="KECILSEMUA",
-            type="password",
-        )
     col1 = st.columns([2, 2, 2, 2])
     with col1[0]:
         task_id = st.text_input(label="Task Id", value="39")
@@ -65,7 +56,6 @@ def post_annotations(dump_dir: str, port: int = 6161):
 
     st.subheader("Label Changer")
     st.write("Fungsi Label Changer berfungsi untuk mengubah label dari bounding-box yang sudah ditandai (tag).")
-
 
     col2 = st.columns([2, 2, 1, 1])
     with col2[0]:
@@ -87,11 +77,23 @@ def post_annotations(dump_dir: str, port: int = 6161):
     dataset_dir = os.path.join(dump_dir, task_id)
 
     if btn:
+        is_cvat_configured = bool(st.session_state.cvat_host) and bool(
+            st.session_state.cvat_username) and bool(st.session_state.cvat_password)
+
+        if not is_cvat_configured:
+            st.error(
+                "CVAT hasn't configured, please configure it in the Control Panel page")
+            return
+
+        cvat_host = st.session_state.cvat_host
+        cvat_username = st.session_state.cvat_username
+        cvat_password = st.session_state.cvat_password
+
         # initiate dataset
         st.session_state.cvat_dataset = cvat.CVAT(
-            username=username,
-            password=password,
-            host="http://192.168.103.67:8080",
+            username=cvat_username,
+            password=cvat_password,
+            host=cvat_host,
             dump_dir=dump_dir,
         )
         # download dataset
@@ -156,7 +158,8 @@ def post_annotations(dump_dir: str, port: int = 6161):
             patches = st.session_state.dataset.to_patches('ground_truth')
             st.session_state.tags = fiftyone51.get_tags(patches=patches)
         else:
-            st.session_state.tags = fiftyone51.get_tags(patches=st.session_state.patches)
+            st.session_state.tags = fiftyone51.get_tags(
+                patches=st.session_state.patches)
 
     if convert_btn:
         # convert labels
@@ -174,6 +177,7 @@ def post_annotations(dump_dir: str, port: int = 6161):
             filename=os.path.join(dataset_dir, "labels.json")
         )
         st.success(f"Success Evaluate Label Task #{task_id}")
+
 
 if __name__ == "__main__":
     post_annotations(

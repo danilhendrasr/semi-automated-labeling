@@ -1,13 +1,17 @@
 """Control panel configurations"""
 
-import sys, os
+import sys
+import os
 import streamlit as st
 import json
 
 from function.configs import cleanup_dump_dir, init_git_config
 
+# fmt: off
 sys.path.append(os.path.abspath('../..'))
 import apps.dash.config as dash_config
+# fmt: on
+
 
 def configs(page_key: str = "configs"):
 
@@ -24,8 +28,32 @@ def configs(page_key: str = "configs"):
         st.session_state.plotly_port = None
     if "dash_port" not in st.session_state:
         st.session_state.dash_port = None
+    if "cvat_host" not in st.session_state:
+        st.session_state.cvat_host = None
+    if "cvat_username" not in st.session_state:
+        st.session_state.cvat_username = None
+    if "cvat_password" not in st.session_state:
+        st.session_state.cvat_password = None
 
     st.header("Control Panel Configurations")
+
+    st.subheader("CVAT")
+    cvat_host = st.text_input("Host", placeholder="http://192.1.1.1:1111")
+    st.session_state.cvat_host = cvat_host
+
+    col_cvat = st.columns([1, 1])
+    with col_cvat[0]:
+        cvat_username = st.text_input(
+            label="Username", placeholder="superadmin")
+        st.session_state.cvat_username = cvat_username
+
+    with col_cvat[1]:
+        cvat_password = st.text_input(
+            label="Password",
+            type="password",
+            placeholder="xxxxx"
+        )
+        st.session_state.cvat_password = cvat_password
 
     st.subheader("Github Account")
     col0 = st.columns([2, 2, 1])
@@ -120,7 +148,7 @@ def configs(page_key: str = "configs"):
 
         with open(os.path.join(dump_dir, 'configs.json'), 'w') as f:
             f.write(json_object)
-        
+
         st.success(f"Configs saved in {dump_dir}")
 
     return [dump_dir, fiftyone_port, flask_port, dash_port]

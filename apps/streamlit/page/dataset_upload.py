@@ -25,7 +25,7 @@ def dataset_upload(dump_dir: str):
     with cols[1]:
         access_token = st.text_input(
             label='Personal Access Token',
-            value='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',
+            value='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',
             type='password')
 
     cols_2 = st.columns([3, 2, 1])
@@ -46,17 +46,7 @@ def dataset_upload(dump_dir: str):
     file_upload = st.file_uploader(accept_multiple_files=False,
                                    label="Dataset File", type="zip")
 
-    st.header("CVAT Configuration")
-
-    col0 = st.columns([2, 2])
-    with col0[0]:
-        cvat_username = st.text_input(label="Username", value="superadmin")
-    with col0[1]:
-        cvat_password = st.text_input(
-            label="Password",
-            value="KECILSEMUA",
-            type="password",
-        )
+    st.header("CVAT Metadata")
 
     cvat_task_name = st.text_input(
         label="Task Name", placeholder="CVAT Task Name", value="asdf")
@@ -67,6 +57,14 @@ def dataset_upload(dump_dir: str):
     upload_btn = st.button(label="Upload")
 
     if upload_btn:
+        is_cvat_configured = bool(st.session_state.cvat_host) and bool(
+            st.session_state.cvat_username) and bool(st.session_state.cvat_password)
+
+        if not is_cvat_configured:
+            st.error(
+                "CVAT hasn't configured, please configure it in the Control Panel page")
+            return
+
         if not repo_url:
             st.error("Repository name cannot be empty")
             return
@@ -144,10 +142,12 @@ def dataset_upload(dump_dir: str):
 
                     repo.push(with_dataset=True)
 
-                    cvat_host = "http://192.168.103.67:8080"
-                    if 'cvat_dataset' not in st.session_state:
-                        st.session_state.cvat_dataset = CVAT(
-                            username=cvat_username, password=cvat_password, host=cvat_host, dump_dir=dump_dir)
+                    cvat_host = st.session_state.cvat_host
+                    cvat_username = st.session_state.cvat_username
+                    cvat_password = st.session_state.cvat_password
+
+                    st.session_state.cvat_dataset = CVAT(
+                        username=cvat_username, password=cvat_password, host=cvat_host, dump_dir=dump_dir)
 
                     task_labels = [{"name": x}
                                    for x in cvat_task_labels.split(",")]
