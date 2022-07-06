@@ -1,10 +1,13 @@
 """Control panel configurations"""
 
-import os
+import sys, os
 import streamlit as st
 import json
 
 from function.configs import cleanup_dump_dir, init_git_config
+
+sys.path.append(os.path.abspath('../..'))
+import apps.dash.config as dash_config
 
 def configs(page_key: str = "configs"):
 
@@ -83,17 +86,19 @@ def configs(page_key: str = "configs"):
         )
         st.session_state.fiftyone_port = fiftyone_port
     with col2[1]:
-        plotly_port = st.text_input(
-            label="Plotly Port",
-            value=st.session_state.plotly_port,
+        flask_port = dash_config.port['flask']
+        st.selectbox(
+            label="Flask Port",
+            options=[flask_port],
             key=page_key,
         )
-        st.session_state.plotly_port = plotly_port
+        st.session_state.flask_port = flask_port
     with col2[2]:
-        dash_port = st.text_input(
+        dash_port = dash_config.port['dash']
+        st.selectbox(
             label="Dash Port",
-            value=st.session_state.dash_port,
-            key=page_key,
+            options=[dash_port],
+            key=page_key
         )
         st.session_state.dash_port = dash_port
     with col2[3]:
@@ -108,7 +113,7 @@ def configs(page_key: str = "configs"):
             "email": email,
             "dump_dir": dump_dir,
             "fiftyone_port": fiftyone_port,
-            "plotly_port": plotly_port,
+            "flask_port": flask_port,
             "dash_port": dash_port,
         }
         json_object = json.dumps(json_configs, indent=4)
@@ -118,4 +123,4 @@ def configs(page_key: str = "configs"):
         
         st.success(f"Configs saved in {dump_dir}")
 
-    return [dump_dir, fiftyone_port, plotly_port, dash_port]
+    return [dump_dir, fiftyone_port, flask_port, dash_port]
