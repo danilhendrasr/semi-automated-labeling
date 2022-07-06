@@ -87,7 +87,6 @@ def post_annotations(dump_dir: str, port: int = 6161):
     dataset_dir = os.path.join(dump_dir, task_id)
 
     if btn:
-        # if 'cvat_dataset' not in st.session_state:
         # initiate dataset
         st.session_state.cvat_dataset = cvat.CVAT(
             username=username,
@@ -114,15 +113,29 @@ def post_annotations(dump_dir: str, port: int = 6161):
         )
         st.success("Apply NMS")
 
+        def open_new_tab(url):
+            js = f"window.open('{url}')"
+            html = '<img src onerror="{}">'.format(js)
+            div = Div(text=html)
+            st.bokeh_chart(div)
+
         if with_embd == "True":
             # load datasset to fiftyone
             st.session_state.dataset = fiftyone51.load_fiftyone(
                 dataset_name=task_id,
                 dataset_dir=dataset_dir,
                 delete_existing=True,
-                url='http://192.168.103.67:6001/compute'
+                url='http://192.168.103.67:6001/delete/cache'
             )
-            st.success("Load dataset to FiftyOne")
+
+            path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
+            path_fiftyone = f'http://192.168.103.67:6001/fiftyone/{task_id}'
+
+            st.success(f"Embedding is available on {path_embedding}.")
+            st.success(f"Fiftyone is available on {path_fiftyone}.")
+
+            open_new_tab(path_embedding)
+            open_new_tab(path_fiftyone)
         else:
             # preview to fiftyone
             st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
@@ -133,13 +146,9 @@ def post_annotations(dump_dir: str, port: int = 6161):
                 port=port,
             )
 
-        # def open_new_tab(url):
-        #     js = f"window.open('{url}')"
-        #     html = '<img src onerror="{}">'.format(js)
-        #     div = Div(text=html)
-        #     st.bokeh_chart(div)
-
-        # open_new_tab(f'http://192.168.103.67:6001/embedding/{task_id}')
+            path_fiftyone = f'http://192.168.103.67:{port}/datasets/{task_id}'
+            st.success(f"Fiftyone is available on {path_fiftyone}.")
+            open_new_tab(path_fiftyone)
 
     if save_tags_btn:
         # save patches tags
