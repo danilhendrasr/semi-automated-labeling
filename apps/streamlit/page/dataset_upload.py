@@ -1,6 +1,5 @@
 import os
 import zipfile
-from fsutil import is_dir
 import streamlit as st
 
 from function.repository import Repository
@@ -11,7 +10,7 @@ from function.cvat import CVAT
 # 1. Clear form on submit
 # 2. Segment size
 # 3. Batch upload
-def dataset_upload(dump_dir: str):
+def dataset_upload(dump_dir: str = os.getcwd()):
     """ Code for dataset upload page """
 
     st.header("Dataset Upload")
@@ -124,7 +123,7 @@ def dataset_upload(dump_dir: str):
                             files_to_push.append(f"{data_dir}/{x}")
                         else:
                             target = f"{data_dir}/{x}"
-                            if is_dir(target):
+                            if os.path.isdir(target):
                                 os.removedirs(target)
                             else:
                                 os.remove(target)

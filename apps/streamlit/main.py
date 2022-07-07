@@ -27,51 +27,27 @@ with st.sidebar:
         default_index=0,
     )
 
-# session state
-if "dump_dir" not in st.session_state:
-    st.session_state.dump_dir = None
-if "serverless_dir" not in st.session_state:
-    st.session_state.serverless_dir = None
-if "fiftyone_port" not in st.session_state:
-    st.session_state.fiftyone_port = None
-if "plotly_port" not in st.session_state:
-    st.session_state.plotly_port = None
-if "dash_port" not in st.session_state:
-    st.session_state.dash_port = None
 
 if menu == "Control Panel":
-    configurations = configs()
-    st.session_state.cvat_host = configurations[0]
-    st.session_state.cvat_username = configurations[1]
-    st.session_state.cvat_password = configurations[2]
-    st.session_state.dump_dir = configurations[3]
-    st.session_state.serverless_dir = configurations[4]
-    st.session_state.fiftyone_port = configurations[4]
-    st.session_state.plotly_port = configurations[5]
-    st.session_state.dash_port = configurations[6]
+    configs()
 
 if menu == "Model Registry":
-    model_registry(dump_dir=st.session_state.dump_dir)
+    model_registry()
 
 if menu == "Model Deployment":
-    model_deployment(
-        dump_dir=st.session_state.dump_dir,
-        serverless_dir=st.session_state.serverless_dir,
-        )
+    model_deployment()
 
 if menu == "Dataset Upload":
-    dataset_upload(dump_dir=st.session_state.dump_dir)
+    dataset_upload()
 
 if menu == "Dataset Splitter":
-    dataset_splitter(dump_dir=st.session_state.dump_dir)
+    dataset_splitter()
 
 if menu == "Dataset Quality":
-    dataset_quality(dump_dir=st.session_state.dump_dir,
-                    port=st.session_state.fiftyone_port)
+    dataset_quality()
 
 if menu == "Label Evaluator":
-    post_annotations(dump_dir=st.session_state.dump_dir,
-                     port=st.session_state.fiftyone_port)
+    post_annotations()
 
 if menu == "Dataset Versioning":
-    dataset_versioning(dump_dir=st.session_state.dump_dir)
+    dataset_versioning()

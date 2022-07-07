@@ -17,11 +17,10 @@ def dataset_splitter(page_key: str = "dataset_splitter", dump_dir: str = os.getc
         st.session_state.cvat = None
     if "splitter" not in st.session_state:
         st.session_state.splitter = None
+    if bool(st.session_state.dump_dir):
+        dump_dir = st.session_state.dump_dir
 
     st.header("Dataset Splitter")
-    st.write("Feature Dataset Splitter berfungsi untuk mem-split Task besar \
-        menjadi Task yang lebih kecil. Salah satu fungsi kongkrit dari fitur ini dapat \
-        digunakan untuk mem-split Task Prediction menjadi Task Ground-Truth.")
 
     st.subheader("Dataset Split Parameters")
     col1 = st.columns([2, 2, 3])

@@ -4,11 +4,18 @@ Page for model serving
 
 import streamlit as st
 import os
+
+from yaml import dump
 from function.dvc import DVC
 from function.repository import Repository
 
 def model_registry(page_key: str = 'model_registry', dump_dir: str = None):
     """ page for model registry """
+
+    # state
+    if bool(st.session_state.dump_dir):
+        dump_dir = st.session_state.dump_dir
+
     st.header('Model Registry')
 
     st.subheader('Clone Repository')

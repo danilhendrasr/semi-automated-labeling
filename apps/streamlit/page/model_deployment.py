@@ -10,7 +10,12 @@ from function.repository import Repository
 from function import cvat
 from function import utils
 
-def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getcwd(), serverless_dir: str = os.getcwd()):
+def model_deployment(page_key: str = 'model_deployment', serverless_dir: str = os.getcwd()):
+    """model deployment page"""
+
+    # state
+    if bool(st.session_state.serverless_dir):
+        serverless_dir = st.session_state.serverless_dir
 
     st.header('Model Deployment')
     st.subheader('Model Repository')
