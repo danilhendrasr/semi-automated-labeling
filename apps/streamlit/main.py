@@ -30,6 +30,8 @@ with st.sidebar:
 # session state
 if "dump_dir" not in st.session_state:
     st.session_state.dump_dir = None
+if "serverless_dir" not in st.session_state:
+    st.session_state.serverless_dir = None
 if "fiftyone_port" not in st.session_state:
     st.session_state.fiftyone_port = None
 if "plotly_port" not in st.session_state:
@@ -43,6 +45,7 @@ if menu == "Control Panel":
     st.session_state.cvat_username = configurations[1]
     st.session_state.cvat_password = configurations[2]
     st.session_state.dump_dir = configurations[3]
+    st.session_state.serverless_dir = configurations[4]
     st.session_state.fiftyone_port = configurations[4]
     st.session_state.plotly_port = configurations[5]
     st.session_state.dash_port = configurations[6]
@@ -51,7 +54,10 @@ if menu == "Model Registry":
     model_registry(dump_dir=st.session_state.dump_dir)
 
 if menu == "Model Deployment":
-    model_deployment(dump_dir=st.session_state.dump_dir)
+    model_deployment(
+        dump_dir=st.session_state.dump_dir,
+        serverless_dir=st.session_state.serverless_dir,
+        )
 
 if menu == "Dataset Upload":
     dataset_upload(dump_dir=st.session_state.dump_dir)
