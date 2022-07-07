@@ -10,7 +10,7 @@ from function import cvat
 from function import utils
 
 
-def post_annotations(dump_dir: str, port: int = 6161):
+def post_annotations(dump_dir: str = os.getcwd()):
 
     # state
     if "patches" not in st.session_state:
@@ -21,6 +21,9 @@ def post_annotations(dump_dir: str, port: int = 6161):
         st.session_state.cvat_dataset = None
     if "dataset" not in st.session_state:
         st.session_state.dataset = None
+    if bool(st.session_state.dump_dir):
+        dump_dir = st.session_state.dump_dir
+
     # assign unique tags
     try:
         unique_tags = np.unique(st.session_state.tags)
@@ -67,9 +70,6 @@ def post_annotations(dump_dir: str, port: int = 6161):
             options=classes
         )
     convert_btn = st.button(label="Convert Label")
-
-    # st.subheader("Send Back to CVAT")
-    # send_to_cvat_btn = st.button(label="Send Back to CVAT")
 
     # init dataset directory
     dataset_dir = os.path.join(dump_dir, task_id)

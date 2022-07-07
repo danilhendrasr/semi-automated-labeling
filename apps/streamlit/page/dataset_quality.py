@@ -17,11 +17,11 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
         st.session_state.validac = None
     if "validac" not in st.session_state:
         st.session_state.validac = None
+    if bool(st.session_state.dump_dir) and bool(st.session_state.fiftyone_port):
+        dump_dir = st.session_state.dump_dir
+        port = st.session_state.fiftyone_port
 
     st.header("Dataset Quality")
-    st.write("Feature Dataset Quality berfungsi untuk mengevaluasi dataset predictions \
-            dengan dataset ground-truth. Metric yang digunakan dalam evaluasi adalah mAP. \
-            Hasil evaluasi juga selanjutnya dapat ditampilkan di FiftyOne.")
 
     st.subheader("Evaluate Predictions Task")
     col1 = st.columns([2, 2, 2])

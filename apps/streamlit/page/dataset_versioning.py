@@ -15,6 +15,11 @@ def dataset_versioning(
     page_key: str = "dataset_versioning", dump_dir: str = os.getcwd()
 ):
     """Dataset versioning page"""
+
+    # state
+    if bool(st.session_state.dump_dir):
+        dump_dir = st.session_state.dump_dir
+
     st.header("Dataset Versioning")
 
     # repository clone section
@@ -154,13 +159,13 @@ def dataset_versioning(
         dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
 
-        # create report
+        #create report
         report = GenerateReport(
-            repo_dir=repo.repo_dir,
-            format=annot_type,
-            version=ref,
-            desc=desc,
-            filename="README"
+             repo_dir=repo.repo_dir,
+             format=annot_type,
+             version=ref,
+             desc=desc,
+             filename="README"
         )
         report.generate()
 
