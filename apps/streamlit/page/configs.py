@@ -44,12 +44,16 @@ def configs(page_key: str = "configs"):
     col_cvat = st.columns([1, 1])
     with col_cvat[0]:
         cvat_username = st.text_input(
-            label="Username", placeholder="superadmin")
+            label="Username",
+            value=st.session_state.cvat_username,
+            placeholder="superadmin"
+        )
         st.session_state.cvat_username = cvat_username
 
     with col_cvat[1]:
         cvat_password = st.text_input(
             label="Password",
+            value=st.session_state.cvat_password,
             type="password",
             placeholder="xxxxx"
         )
