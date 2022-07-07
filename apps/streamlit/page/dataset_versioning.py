@@ -147,7 +147,7 @@ def dataset_versioning(
         if is_merging == "True":
             dvc.pull()
             # rename dataset directory from dvc pull
-            os.rename(os.path.join(".", repo.repo_dir, "dataset"), os.path.join(".", repo.repo_dir, "old_dataset"))
+            os.rename(os.path.join(repo.repo_dir, "dataset"), os.path.join(repo.repo_dir, "old_dataset"))
             fiftyone51.merging_dataset(format=annot_type, repo_dir=repo.repo_dir)
             st.success(f'Success Merging {merge_ref} to {ref}')
 
@@ -156,15 +156,15 @@ def dataset_versioning(
         dvc.add(item="dataset")
         st.success(f"Success Add Dataset to DVC")
 
-        # create report
-        report = GenerateReport(
-            repo_dir=repo.repo_dir,
-            format=annot_type,
-            version=ref,
-            desc=desc,
-            filename="README"
-        )
-        report.generate()
+        # # create report
+        # report = GenerateReport(
+        #     repo_dir=repo.repo_dir,
+        #     format=annot_type,
+        #     version=ref,
+        #     desc=desc,
+        #     filename="README"
+        # )
+        # report.generate()
 
         # versioning dataset
         repo.create_release(title=title, desc=desc, tag=ref, with_commit=True)

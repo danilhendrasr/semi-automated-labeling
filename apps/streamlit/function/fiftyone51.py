@@ -67,7 +67,7 @@ def preview_fiftyone(
         name=dataset_name,
     )
 
-    session = fo.launch_app(dataset, address="0.0.0.0", port=port)
+    session = fo.launch_app(dataset, address="0.0.0.0", port=port, remote=True)
 
     if is_patches:
         # view mode patches ground truth/predictions

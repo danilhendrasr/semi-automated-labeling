@@ -15,7 +15,10 @@ def init_git_config(username, email):
 
 def cleanup_dump_dir(dump_dir):
     """cleanup dump dir"""
-    shutil.rmtree(dump_dir)
-    print("[INFO] Dump directory cleaned")
-    os.makedirs(dump_dir)
-    print("[INFO] Dump directory recreated")
+    if os.path.exists(dump_dir):
+        shutil.rmtree(dump_dir)
+        print("[INFO] Dump dir cleaned")
+        os.makedirs(dump_dir)
+    else:
+        os.makedirs(dump_dir)
+        print("[INFO] Dump dir created")
