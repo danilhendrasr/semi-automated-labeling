@@ -10,7 +10,7 @@ from function.repository import Repository
 from function import cvat
 from function import utils
 
-def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getcwd()):
+def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getcwd(), serverless_dir: str = os.getcwd()):
 
     st.header('Model Deployment')
     st.subheader('Model Repository')
@@ -41,7 +41,7 @@ def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getc
     btn = st.button(label='Deploy Model', key=f'{page_key}_clone')
 
     if btn:
-        repo = Repository(repo_url=url, ref=ref, token=token, dump_dir=dump_dir)
+        repo = Repository(repo_url=url, ref=ref, token=token, dump_dir=serverless_dir)
 
         # clone repo
         repo.clone(force=True)
@@ -53,4 +53,4 @@ def model_deployment(page_key: str = 'model_deployment', dump_dir: str = os.getc
         dvc.pull()
 
         # deploy model
-        cvat.deploy_model(repo_dir=repo.repo_dir, serverless_dir=dump_dir)
+        cvat.deploy_model(repo_dir=repo.repo_dir, serverless_dir=serverless_dir)

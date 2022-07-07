@@ -16,23 +16,25 @@ def configs(page_key: str = "configs"):
 
     # state
     if "username" not in st.session_state:
-        st.session_state.username = None
+        st.session_state.username = "Didi Ruhyadi"
     if "email" not in st.session_state:
-        st.session_state.email = None
+        st.session_state.email = "ruhyadi.dr@gmail.com"
     if "dump_dir" not in st.session_state:
-        st.session_state.dump_dir = None
+        st.session_state.dump_dir = "/tmp"
+    if "serverless_dir" not in st.session_state:
+        st.session_state.serverless_dir = "/home/apps/cvat/serverless"
     if "fiftyone_port" not in st.session_state:
-        st.session_state.fiftyone_port = None
+        st.session_state.fiftyone_port = "7101"
     if "plotly_port" not in st.session_state:
         st.session_state.plotly_port = None
     if "dash_port" not in st.session_state:
         st.session_state.dash_port = None
     if "cvat_host" not in st.session_state:
-        st.session_state.cvat_host = None
+        st.session_state.cvat_host = "http://192.168.103.67:8080"
     if "cvat_username" not in st.session_state:
-        st.session_state.cvat_username = None
+        st.session_state.cvat_username = "superadmin"
     if "cvat_password" not in st.session_state:
-        st.session_state.cvat_password = None
+        st.session_state.cvat_password = "KECILSEMUA"
 
     st.header("Control Panel Configurations")
 
@@ -109,6 +111,13 @@ def configs(page_key: str = "configs"):
         with st.spinner("Cleaning up dump directory..."):
             st.success("Dump directory cleaned up")
 
+    st.subheader("Serverless Directory")
+    serverless_dir = st.text_input(
+        label="Serverless Directory",
+        value=st.session_state.serverless_dir,
+        key=page_key
+    ) 
+
     st.subheader("Port Configs")
     col2 = st.columns([2, 2, 2, 2, 2])
     with col2[0]:
@@ -156,4 +165,4 @@ def configs(page_key: str = "configs"):
 
         st.success(f"Configs saved in {dump_dir}")
 
-    return [cvat_host, cvat_username, cvat_password, dump_dir, fiftyone_port, flask_port, dash_port]
+    return [cvat_host, cvat_username, cvat_password, dump_dir, serverless_dir, fiftyone_port, flask_port, dash_port]

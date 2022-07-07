@@ -45,39 +45,37 @@ def convert_to_yolo(dataset_dir):
     print("[INFO] Success convert to Fiftyone YOLO Format")
 
 
-def preview_fiftyone(
-    dataset_name: str,
-    dataset_dir: str,
-    delete_existing: bool = True,
-    is_patches: bool = True,
-    port: int = 5151,
-    url: str = 'http://192.168.103.67:6001/delete/cache'
-):
-    """Load dataset to fiftyone"""
-    if delete_existing:
-        try:
-            fo.delete_dataset(dataset_name)
-        except:
-            print("[INFO] No Existing Dataset")
+# def preview_fiftyone(
+#     dataset_name: str,
+#     dataset_dir: str,
+#     delete_existing: bool = True,
+#     is_patches: bool = True,
+#     port: int = 5151,
+# ):
+#     """Load dataset to fiftyone"""
+#     if delete_existing:
+#         list_datasets = fo.list_datasets()
+#         try:
+#             [fo.delete_dataset(name) for name in list_datasets]
+#         except:
+#             print("[INFO] No Existing Dataset")
 
-    requests.post(url=url)
+#     dataset = fo.Dataset.from_dir(
+#         dataset_dir=dataset_dir,
+#         dataset_type=fo.types.COCODetectionDataset,
+#         name=dataset_name,
+#     )
 
-    dataset = fo.Dataset.from_dir(
-        dataset_dir=dataset_dir,
-        dataset_type=fo.types.COCODetectionDataset,
-        name=dataset_name,
-    )
+#     session = fo.launch_app(dataset, address="0.0.0.0", port=port)
 
-    session = fo.launch_app(dataset, address="0.0.0.0", port=port, remote=True)
-
-    if is_patches:
-        # view mode patches ground truth/predictions
-        gt_patches = dataset.to_patches("ground_truth")
-        session.view = gt_patches
-        return dataset, gt_patches
-    else:
-        session.view = None
-        return dataset, None
+#     if is_patches:
+#         # view mode patches ground truth/predictions
+#         gt_patches = dataset.to_patches("ground_truth")
+#         session.view = gt_patches
+#         return dataset, gt_patches
+#     else:
+#         session.view = None
+#         return dataset, None
 
 
 def load_fiftyone(
