@@ -45,8 +45,6 @@ def post_annotations(dump_dir: str, port: int = 6161):
         task_id = st.text_input(label="Task Id", value="39")
     with col1[1]:
         iou_thres = st.text_input(label="NMS IoU Threshold", value="0.5")
-    with col1[2]:
-        with_embd = st.radio(label="With Embedding", options=["True", "False"])
 
     col2 = st.columns([2, 2, 4])
     with col2[0]:
@@ -121,45 +119,27 @@ def post_annotations(dump_dir: str, port: int = 6161):
             div = Div(text=html)
             st.bokeh_chart(div)
 
-        if with_embd == "True":
-            # load datasset to fiftyone
-            st.session_state.dataset = fiftyone51.load_fiftyone(
-                dataset_name=task_id,
-                dataset_dir=dataset_dir,
-                delete_existing=True,
-                url='http://192.168.103.67:6001/delete/cache'
-            )
+        # load datasset to fiftyone
+        st.session_state.dataset = fiftyone51.load_fiftyone(
+            dataset_name=task_id,
+            dataset_dir=dataset_dir,
+            delete_existing=True,
+            url='http://192.168.103.67:6001/delete/cache'
+        )
 
-            path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
-            path_fiftyone = f'http://192.168.103.67:6001/fiftyone/{task_id}'
+        path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
+        path_fiftyone = f'http://192.168.103.67:6001/fiftyone/{task_id}'
 
-            st.success(f"Embedding is available on {path_embedding}.")
-            st.success(f"Fiftyone is available on {path_fiftyone}.")
+        st.success(f"Embedding is available on {path_embedding}.")
+        st.success(f"Fiftyone is available on {path_fiftyone}.")
 
-            open_new_tab(path_embedding)
-            open_new_tab(path_fiftyone)
-        else:
-            # preview to fiftyone
-            st.session_state.dataset, st.session_state.patches = fiftyone51.preview_fiftyone(
-                dataset_name=task_id,
-                dataset_dir=dataset_dir,
-                delete_existing=True,
-                is_patches=True,
-                port=port,
-            )
-
-            path_fiftyone = f'http://192.168.103.67:{port}/datasets/{task_id}'
-            st.success(f"Fiftyone is available on {path_fiftyone}.")
-            open_new_tab(path_fiftyone)
+        open_new_tab(path_embedding)
+        open_new_tab(path_fiftyone)
 
     if save_tags_btn:
         # save patches tags
-        if with_embd == "True":
-            patches = st.session_state.dataset.to_patches('ground_truth')
-            st.session_state.tags = fiftyone51.get_tags(patches=patches)
-        else:
-            st.session_state.tags = fiftyone51.get_tags(
-                patches=st.session_state.patches)
+        patches = st.session_state.dataset.to_patches('ground_truth')
+        st.session_state.tags = fiftyone51.get_tags(patches=patches)
 
     if convert_btn:
         # convert labels
