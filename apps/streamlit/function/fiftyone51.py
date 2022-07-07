@@ -51,15 +51,16 @@ def preview_fiftyone(
     delete_existing: bool = True,
     is_patches: bool = True,
     port: int = 5151,
+    url: str = 'http://192.168.103.67:6001/delete/cache'
 ):
-    """Preview dataset to FiftyOne Apps"""
-    # delete existing dataset
+    """Load dataset to fiftyone"""
     if delete_existing:
-        list_datasets = fo.list_datasets()
         try:
-            [fo.delete_dataset(name) for name in list_datasets]
+            fo.delete_dataset(dataset_name)
         except:
             print("[INFO] No Existing Dataset")
+
+    requests.post(url=url)
 
     dataset = fo.Dataset.from_dir(
         dataset_dir=dataset_dir,
@@ -83,7 +84,7 @@ def load_fiftyone(
     dataset_name: str,
     dataset_dir: str,
     delete_existing: bool = True,
-    url: str = 'http://192.168.103.67:6001/compute'
+    url: str = 'http://192.168.103.67:6001/delete/cache'
 ):
     """Load dataset to fiftyone"""
     if delete_existing:
@@ -92,16 +93,15 @@ def load_fiftyone(
         except:
             print("[INFO] No Existing Dataset")
 
+    requests.post(url=url)
+    
     dataset = fo.Dataset.from_dir(
         dataset_dir=dataset_dir,
         dataset_type=fo.types.COCODetectionDataset,
         name=dataset_name,
     )
-    
-    requests.post(url=url, json={'name':dataset_name})
 
     return dataset
-
 
 def get_tags(patches):
     """get patches tags"""

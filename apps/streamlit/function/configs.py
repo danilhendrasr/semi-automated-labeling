@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import fiftyone as fo
 
 def init_git_config(username, email):
     """initialize github configs"""
@@ -14,6 +15,9 @@ def init_git_config(username, email):
     print("[INFO] Github configs initialized")
 
 def cleanup_dump_dir(dump_dir):
+    """Delete all fiftyone datasets."""
+    [fo.delete_dataset(name) for name in fo.list_datasets()]
+    print("[INFO] All fiftyone datasets deleted.")
     """cleanup dump dir"""
     if os.path.exists(dump_dir):
         shutil.rmtree(dump_dir)

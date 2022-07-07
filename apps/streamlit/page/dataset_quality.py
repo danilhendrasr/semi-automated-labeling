@@ -23,17 +23,6 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
             dengan dataset ground-truth. Metric yang digunakan dalam evaluasi adalah mAP. \
             Hasil evaluasi juga selanjutnya dapat ditampilkan di FiftyOne.")
 
-    st.subheader("CVAT Authentications")
-    col0 = st.columns([2, 2])
-    with col0[0]:
-        username = st.text_input(
-            label="Username", value="superadmin", key=f"{page_key}"
-        )
-    with col0[1]:
-        password = st.text_input(
-            label="Password", value="KECILSEMUA", key=f"{page_key}", type="password"
-        )
-
     st.subheader("Evaluate Predictions Task")
     col1 = st.columns([2, 2, 2])
     with col1[0]:
@@ -62,11 +51,23 @@ def dataset_quality(page_key: str = "dataset_quality", dump_dir: str = os.getcwd
         preview = st.button(label="Preview in Fiftyone")
 
     if evaluate:
+        is_cvat_configured = bool(st.session_state.cvat_host) and bool(
+            st.session_state.cvat_username) and bool(st.session_state.cvat_password)
+
+        if not is_cvat_configured:
+            st.error(
+                "CVAT hasn't configured, please configure it in the Control Panel page")
+            return
+
+        cvat_host = st.session_state.cvat_host
+        cvat_username = st.session_state.cvat_username
+        cvat_password = st.session_state.cvat_password
+
         """validation annotations with ground truth"""
         st.session_state.cvat = CVAT(
-            username=username,
-            password=password,
-            host="http://192.168.103.67:8080",
+            username=cvat_username,
+            password=cvat_password,
+            host=cvat_host,
             dump_dir=dump_dir,
         )
         for task_id in [gt_id, pred_id]:

@@ -1,10 +1,17 @@
 """Control panel configurations"""
 
+import sys
 import os
 import streamlit as st
 import json
 
 from function.configs import cleanup_dump_dir, init_git_config
+
+# fmt: off
+sys.path.append(os.path.abspath('../..'))
+import apps.dash.config as dash_config
+# fmt: on
+
 
 def configs(page_key: str = "configs"):
 
@@ -21,8 +28,32 @@ def configs(page_key: str = "configs"):
         st.session_state.plotly_port = None
     if "dash_port" not in st.session_state:
         st.session_state.dash_port = None
+    if "cvat_host" not in st.session_state:
+        st.session_state.cvat_host = None
+    if "cvat_username" not in st.session_state:
+        st.session_state.cvat_username = None
+    if "cvat_password" not in st.session_state:
+        st.session_state.cvat_password = None
 
     st.header("Control Panel Configurations")
+
+    st.subheader("CVAT")
+    cvat_host = st.text_input("Host", placeholder="http://192.1.1.1:1111")
+    st.session_state.cvat_host = cvat_host
+
+    col_cvat = st.columns([1, 1])
+    with col_cvat[0]:
+        cvat_username = st.text_input(
+            label="Username", placeholder="superadmin")
+        st.session_state.cvat_username = cvat_username
+
+    with col_cvat[1]:
+        cvat_password = st.text_input(
+            label="Password",
+            type="password",
+            placeholder="xxxxx"
+        )
+        st.session_state.cvat_password = cvat_password
 
     st.subheader("Github Account")
     col0 = st.columns([2, 2, 1])
@@ -83,17 +114,19 @@ def configs(page_key: str = "configs"):
         )
         st.session_state.fiftyone_port = fiftyone_port
     with col2[1]:
-        plotly_port = st.text_input(
-            label="Plotly Port",
-            value=st.session_state.plotly_port,
+        flask_port = dash_config.port['flask']
+        st.selectbox(
+            label="Flask Port",
+            options=[flask_port],
             key=page_key,
         )
-        st.session_state.plotly_port = plotly_port
+        st.session_state.flask_port = flask_port
     with col2[2]:
-        dash_port = st.text_input(
+        dash_port = dash_config.port['dash']
+        st.selectbox(
             label="Dash Port",
-            value=st.session_state.dash_port,
-            key=page_key,
+            options=[dash_port],
+            key=page_key
         )
         st.session_state.dash_port = dash_port
     with col2[3]:
@@ -108,14 +141,14 @@ def configs(page_key: str = "configs"):
             "email": email,
             "dump_dir": dump_dir,
             "fiftyone_port": fiftyone_port,
-            "plotly_port": plotly_port,
+            "flask_port": flask_port,
             "dash_port": dash_port,
         }
         json_object = json.dumps(json_configs, indent=4)
 
         with open(os.path.join(dump_dir, 'configs.json'), 'w') as f:
             f.write(json_object)
-        
+
         st.success(f"Configs saved in {dump_dir}")
 
-    return [dump_dir, fiftyone_port, plotly_port, dash_port]
+    return [dump_dir, fiftyone_port, flask_port, dash_port]
