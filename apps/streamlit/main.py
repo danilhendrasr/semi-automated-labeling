@@ -39,10 +39,13 @@ if "dash_port" not in st.session_state:
 
 if menu == "Control Panel":
     configurations = configs()
-    st.session_state.dump_dir = configurations[0]
-    st.session_state.fiftyone_port = configurations[1]
-    st.session_state.plotly_port = configurations[2]
-    st.session_state.dash_port = configurations[3]
+    st.session_state.cvat_host = configurations[0]
+    st.session_state.cvat_username = configurations[1]
+    st.session_state.cvat_password = configurations[2]
+    st.session_state.dump_dir = configurations[3]
+    st.session_state.fiftyone_port = configurations[4]
+    st.session_state.plotly_port = configurations[5]
+    st.session_state.dash_port = configurations[6]
 
 if menu == "Model Registry":
     model_registry(dump_dir=st.session_state.dump_dir)

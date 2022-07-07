@@ -12,7 +12,6 @@ sys.path.append(os.path.abspath('../..'))
 import apps.dash.config as dash_config
 # fmt: on
 
-
 def configs(page_key: str = "configs"):
 
     # state
@@ -38,15 +37,18 @@ def configs(page_key: str = "configs"):
     st.header("Control Panel Configurations")
 
     st.subheader("CVAT")
-    cvat_host = st.text_input("Host", placeholder="http://192.1.1.1:1111")
+    cvat_host = st.text_input(
+        label="Host",
+        value=st.session_state.cvat_host,
+        key=f"{page_key}_cvat_host",
+        )
     st.session_state.cvat_host = cvat_host
 
     col_cvat = st.columns([1, 1])
     with col_cvat[0]:
         cvat_username = st.text_input(
-            label="Username",
-            value=st.session_state.cvat_username,
-            placeholder="superadmin"
+            label="Username", 
+            value=st.session_state.cvat_username, 
         )
         st.session_state.cvat_username = cvat_username
 
@@ -55,7 +57,6 @@ def configs(page_key: str = "configs"):
             label="Password",
             value=st.session_state.cvat_password,
             type="password",
-            placeholder="xxxxx"
         )
         st.session_state.cvat_password = cvat_password
 
@@ -155,4 +156,4 @@ def configs(page_key: str = "configs"):
 
         st.success(f"Configs saved in {dump_dir}")
 
-    return [dump_dir, fiftyone_port, flask_port, dash_port]
+    return [cvat_host, cvat_username, cvat_password, dump_dir, fiftyone_port, flask_port, dash_port]
