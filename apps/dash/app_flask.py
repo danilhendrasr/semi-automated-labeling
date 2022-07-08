@@ -4,6 +4,7 @@ from threading import Timer
 from datetime import datetime
 import config, utils
 import os, shutil
+import time
 
 app = Flask(__name__)
 dataset = fo.Dataset()
@@ -67,8 +68,28 @@ def delete_cache():
 
 @app.route('/fiftyone/delete/dataset', methods=['POST'])
 def fiftyone_delete_dataset():
+    global dataset
+    dataset = fo.Dataset()
     for name in fo.list_datasets():
         fo.delete_dataset(name)
+    delete_cache()
+    return '', 204
+
+@app.route('/fiftyone/load/from_dir', methods=['POST'])
+def fiftyone_load_from_dir():
+    data = request.get_json()
+    name = data['name']
+    dir = data['dir']
+
+    fiftyone_delete_dataset()
+    time.sleep(1)
+    
+    dataset = fo.Dataset.from_dir(
+        dataset_dir=dir,
+        dataset_type=fo.types.COCODetectionDataset,
+        name=name,
+    )
+    print(dataset)
     return '', 204
 
 if __name__ == '__main__':
