@@ -3,7 +3,7 @@
 import sys
 import os
 import streamlit as st
-
+from bokeh.models.widgets import Div
 from function.configs import cleanup_dump_dir, init_git_config
 
 # fmt: off
@@ -38,12 +38,28 @@ def configs(page_key: str = "configs"):
     st.header("Control Panel Configurations")
 
     st.subheader("CVAT Authentications")
-    cvat_host = st.text_input(
-        label="Host",
-        value=st.session_state.cvat_host,
-        key=f"{page_key}_cvat_host",
+
+    col_cvat_host = st.columns([4, 1])
+    with col_cvat_host[0]:
+        cvat_host = st.text_input(
+            label="Host",
+            value=st.session_state.cvat_host,
+            key=f"{page_key}_cvat_host",
+            )
+        st.session_state.cvat_host = cvat_host
+    with col_cvat_host[1]:
+        st.write('Open CVAT')
+        open_cvat_btn = st.button(
+            label="Open CVAT",
+            key=page_key,
         )
-    st.session_state.cvat_host = cvat_host
+    if open_cvat_btn:
+        def open_new_tab(url):
+            js = f"window.open('{url}')"
+            html = '<img src onerror="{}">'.format(js)
+            div = Div(text=html)
+            st.bokeh_chart(div)
+        open_new_tab('http://192.168.103.67:8080/')
 
     col_cvat = st.columns([1, 1])
     with col_cvat[0]:
