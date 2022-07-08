@@ -9,6 +9,7 @@ from function import fiftyone51
 from function import cvat
 from function import utils
 
+import fiftyone as fo
 
 def post_annotations(dump_dir: str = os.getcwd()):
 
@@ -126,6 +127,8 @@ def post_annotations(dump_dir: str = os.getcwd()):
             url='http://192.168.103.67:6001/fiftyone/load/from_dir'
         )
 
+        st.session_state.dataset = fo.load_dataset(task_id)
+
         path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
         path_fiftyone = f'http://192.168.103.67:6001/fiftyone/{task_id}'
 
@@ -137,8 +140,7 @@ def post_annotations(dump_dir: str = os.getcwd()):
 
     if save_tags_btn:
         # save patches tags
-        import fiftyone as fo
-        patches = fo.load_dataset(task_id).to_patches('ground_truth')
+        patches = st.session_state.dataset.to_patches('ground_truth')
         st.session_state.tags = fiftyone51.get_tags(patches=patches)
 
     if convert_btn:
