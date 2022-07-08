@@ -2,7 +2,7 @@ streamlit_option_menu
 bokeh==2.4.1
 streamlit==1.10
 python-dotenv==0.20.0
-fiftyone==0.16.3
+fiftyone==0.16.2
 umap-learn==0.5.3
 GitPython
 tqdm==4.64.0
