@@ -120,7 +120,7 @@ def post_annotations(dump_dir: str = os.getcwd()):
             st.bokeh_chart(div)
 
         # load datasset to fiftyone
-        st.session_state.dataset = fiftyone51.load_fiftyone(
+        fiftyone51.load_fiftyone(
             dataset_name=task_id,
             dataset_dir=dataset_dir,
             delete_existing=True,
@@ -138,7 +138,7 @@ def post_annotations(dump_dir: str = os.getcwd()):
 
     if save_tags_btn:
         # save patches tags
-        patches = st.session_state.dataset.to_patches('ground_truth')
+        patches = fo.load_dataset(task_id).to_patches('ground_truth')
         st.session_state.tags = fiftyone51.get_tags(patches=patches)
 
     if convert_btn:
