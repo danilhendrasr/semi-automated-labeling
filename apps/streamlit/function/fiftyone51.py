@@ -81,25 +81,17 @@ def convert_to_yolo(dataset_dir):
 def load_fiftyone(
     dataset_name: str,
     dataset_dir: str,
-    delete_existing: bool = True,
-    url: str = 'http://192.168.103.67:6001/delete/cache'
+    url: str = 'http://192.168.103.67:6001/fiftyone/load/from_dir'
 ):
     """Load dataset to fiftyone"""
-    if delete_existing:
-        try:
-            fo.delete_dataset(dataset_name)
-        except:
-            print("[INFO] No Existing Dataset")
-
-    requests.post(url=url)
     
-    dataset = fo.Dataset.from_dir(
-        dataset_dir=dataset_dir,
-        dataset_type=fo.types.COCODetectionDataset,
-        name=dataset_name,
+    requests.post(
+        url=url,
+        json={
+            'dir' : dataset_dir,
+            'name' : dataset_name
+        }
     )
-
-    return dataset
 
 def get_tags(patches):
     """get patches tags"""

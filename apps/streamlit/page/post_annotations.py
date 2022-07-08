@@ -123,8 +123,7 @@ def post_annotations(dump_dir: str = os.getcwd()):
         fiftyone51.load_fiftyone(
             dataset_name=task_id,
             dataset_dir=dataset_dir,
-            delete_existing=True,
-            url='http://192.168.103.67:6001/delete/cache'
+            url='http://192.168.103.67:6001/fiftyone/load/from_dir'
         )
 
         path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
@@ -138,6 +137,7 @@ def post_annotations(dump_dir: str = os.getcwd()):
 
     if save_tags_btn:
         # save patches tags
+        import fiftyone as fo
         patches = fo.load_dataset(task_id).to_patches('ground_truth')
         st.session_state.tags = fiftyone51.get_tags(patches=patches)
 
