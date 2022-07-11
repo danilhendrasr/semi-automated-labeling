@@ -159,10 +159,18 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# ignore
-nuctl
-*.pt
+## IGNORE
+*.jpg
+*.ipynb
+*.md
+*.json
+*.zip
 
-/apps/cvat/serverless/
-sample/
-apps/cvat/serverless/ruhyadi/yolor
+nuctl
+*.yaml
+apps/streamlit/master2.py
+apps/streamlit/page/post_annotations2.py
+apps/streamlit/page/post_annotations3.py
+
+/apps/streamlit/dump
+/sample
