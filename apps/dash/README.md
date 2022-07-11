@@ -18,19 +18,16 @@ cd fiftyone-plotly-dash
 
 ## API
 
-|   Method   |               Route               |                                                                                            Description                                                                                            |
-|:----------:|-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   `GET`    | `url:6001/embedding/<name>`       | Display image embeddings plot of `<name>`. <br> <br> This API will automatically send `POST` `url:6001/compute`, if `<name>.pickle` is not found on cache folder.                                 |                   
-|   `GET`    | `url:6001/fiftyone/<name>`        | Display selected image embeddings scatter of `<name>` on fiftyone interface.                            
-
-|   Method   |               Route               |                                JSON                                |                                                                                               Description                                                                                               |
-|:----------:|-----------------------------------|--------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   `POST`   | `url:6001/compute`                | <pre>'name' :str</pre>                                             | Compute image embeddings of `<name>` and saved the result to `<name>.pickle` on cache folder.                                                                                                           |
-|   `POST`   | `url:6001/fiftyone/update`        | <pre>'name' :str<br>'ids'  :list</pre>                             | Update fiftyone view of <name> to only contains <ids> images.                                                                                                                                           |
-|   `POST`   | `url:6001/fiftyone/save/view`     | -                                                                  | Save current fiftyone session view to dataset.                                                                                                                                                          |
-|   `POST`   | `url:6001/fiftyone/delete/dataset`| -                                                                  | Delete add fiftyone dataset.                                                                                                                                                                            |
-|   `POST`   | `url:6001/delete/cache`           | -                                                                  | Delete all cache.                                                                                                                                                                                       |
-
+| Method | Route                      | Request                               | Description                                                                                                                                           |
+|:------:|----------------------------|---------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `GET`  | `/fiftyone/<name>`         | -                                     | Redirect to fiftyone tab wtih `<name>` dataset.                                                                                                       |
+| `GET`  | `/embedding/<name>`        | -                                     | Redirect to plotly dash tab with `name` embeddings.                                                                                                   |
+| `POST` | `/compute`                 | <pre>'name': str</pre>                | Compute `name` dataset uniqueness and embeddings. Then saved `name` dataset information, uniqueness, and embeddings to `name.pickle` at cache folder. |
+| `POST` | `/fiftyone/update`         | <pre>'name': str<br>'ids': list</pre> | Update current fiftyone session to `name` dataset and view to selected patches `ids`.                                                                 |
+| `POST` | `/fiftyone/save/view`      | -                                     | Save fiftyone session view.                                                                                                                           |
+| `POST` | `/delete/cache`            | -                                     | Delete cache folder files.                                                                                                                            |
+| `POST` | `/fiftyone/delete/dataset` | -                                     | Delete all fiftyone dataset on the database.                                                                                                          |
+| `POST` | `/fiftyone/load/from_dir`  | <pre>'name': str<br>'dir': str</pre>  | Load fiftyone dataset from `dir` and saved as `name` dataset.                                                                                         |
 
 ## Docker
 
