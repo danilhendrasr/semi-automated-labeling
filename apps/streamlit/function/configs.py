@@ -1,6 +1,9 @@
 """Control Panel Configurations function"""
 
-import os
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+import config
+
 import shutil
 import fiftyone as fo
 import requests
@@ -17,7 +20,7 @@ def init_git_config(username, email):
 
 def cleanup_dump_dir(dump_dir):
     """Delete all fiftyone datasets."""
-    requests.post('http://192.168.103.67:6001/fiftyone/delete/dataset')
+    requests.port(f"{config.url}:{config.port['flask']}/fiftyone/delete/dataset")
     print("[INFO] All fiftyone datasets deleted.")
     """cleanup dump dir"""
     if os.path.exists(dump_dir):

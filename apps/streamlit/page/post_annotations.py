@@ -1,6 +1,9 @@
 """ Post Annotations Page """
 
-import os
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+import config
+
 import numpy as np
 import streamlit as st
 from bokeh.models.widgets import Div
@@ -123,14 +126,13 @@ def post_annotations(dump_dir: str = os.getcwd()):
         # load datasset to fiftyone
         fiftyone51.load_fiftyone(
             dataset_name=task_id,
-            dataset_dir=dataset_dir,
-            url='http://192.168.103.67:6001/fiftyone/load/from_dir'
+            dataset_dir=dataset_dir
         )
 
         st.session_state.dataset = fo.load_dataset(task_id)
 
-        path_embedding = f'http://192.168.103.67:6001/embedding/{task_id}'
-        path_fiftyone = f'http://192.168.103.67:6001/fiftyone/{task_id}'
+        path_embedding = f"{config.url}:{config.port['flask']}/embedding/{task_id}"
+        path_fiftyone = f"{config.url}:{config.port['flask']}/fiftyone/{task_id}"
 
         st.success(f"Embedding is available on {path_embedding}.")
         st.success(f"Fiftyone is available on {path_fiftyone}.")

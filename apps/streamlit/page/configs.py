@@ -1,14 +1,15 @@
 """Control panel configurations"""
 
-import sys
-import os
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+
 import streamlit as st
 from bokeh.models.widgets import Div
 from function.configs import cleanup_dump_dir, init_git_config
 
 # fmt: off
 sys.path.append(os.path.abspath('../..'))
-import apps.dash.config as dash_config
+import config
 # fmt: on
 
 def configs(page_key: str = "configs"):
@@ -23,11 +24,11 @@ def configs(page_key: str = "configs"):
     if "serverless_dir" not in st.session_state:
         st.session_state.serverless_dir = "/home/apps/cvat/serverless"
     if "fiftyone_port" not in st.session_state:
-        st.session_state.fiftyone_port = "7101"
-    # if "plotly_port" not in st.session_state:
-    #     st.session_state.plotly_port = None
-    # if "dash_port" not in st.session_state:
-    #     st.session_state.dash_port = None
+        st.session_state.fiftyone_port = config.port['fiftyone-preview']
+    if "flask_port" not in st.session_state:
+        st.session_state.flask_port = config.port['flask']
+    if "dash_port" not in st.session_state:
+        st.session_state.dash_port = config.port['dash']
     if "cvat_host" not in st.session_state:
         st.session_state.cvat_host = "http://192.168.103.67:8080"
     if "cvat_username" not in st.session_state:
@@ -130,7 +131,7 @@ def configs(page_key: str = "configs"):
         )
         st.session_state.fiftyone_port = fiftyone_port
     with col2[1]:
-        flask_port = dash_config.port['flask']
+        flask_port = config.port['flask']
         st.selectbox(
             label="Flask Port",
             options=[flask_port],
@@ -138,7 +139,7 @@ def configs(page_key: str = "configs"):
         )
         st.session_state.flask_port = flask_port
     with col2[2]:
-        dash_port = dash_config.port['dash']
+        dash_port = config.port['dash']
         st.selectbox(
             label="Dash Port",
             options=[dash_port],

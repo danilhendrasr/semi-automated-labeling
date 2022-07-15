@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -5,7 +8,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import math
 import requests
-import os
 import config
 
 def create_figure(df, min_uniqueness, max_uniqueness, min_sqrt_area, max_sqrt_area):
@@ -54,7 +56,7 @@ def main(name):
                     responsive=True,
                     style={'width' : '100%', 'height': '100%'}
                 ),
-                style={'width' : '100%', 'height': '60%'}
+                style={'width' : '100%', 'height': '80%'}
             ),
             dbc.Container(
                 dbc.Button("Select All", color="primary", className="me-3", id='select-all'),

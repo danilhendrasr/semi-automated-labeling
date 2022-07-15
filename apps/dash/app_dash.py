@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+
 import dash
 import dash_bootstrap_components as dbc
 import config

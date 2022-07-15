@@ -1,9 +1,12 @@
+import os, sys
+sys.path.append(os.path.abspath('../..'))
+
 import fiftyone as fo
 from flask import Flask, request, redirect, jsonify
 from threading import Timer
 from datetime import datetime
 import config, utils
-import os, shutil
+import shutil
 import time
 
 app = Flask(__name__)
